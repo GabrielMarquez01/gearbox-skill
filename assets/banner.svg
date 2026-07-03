@@ -1,0 +1,48 @@
+<svg width="900" height="230" viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#161b2e"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#58a6ff"/>
+      <stop offset="1" stop-color="#79c0ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="230" rx="14" fill="url(#bg)"/>
+  <rect x="1" y="1" width="898" height="228" rx="13" fill="none" stroke="#30363d" stroke-width="2"/>
+
+  <!-- Engrane -->
+  <g transform="translate(105,115)">
+    <g fill="none" stroke="url(#blue)" stroke-width="9" stroke-linecap="round">
+      <line x1="0" y1="-62" x2="0" y2="-46"/>
+      <line x1="0" y1="46" x2="0" y2="62"/>
+      <line x1="-62" y1="0" x2="-46" y2="0"/>
+      <line x1="46" y1="0" x2="62" y2="0"/>
+      <line x1="-44" y1="-44" x2="-33" y2="-33"/>
+      <line x1="33" y1="33" x2="44" y2="44"/>
+      <line x1="44" y1="-44" x2="33" y2="-33"/>
+      <line x1="-33" y1="33" x2="-44" y2="44"/>
+    </g>
+    <circle r="40" fill="none" stroke="url(#blue)" stroke-width="10"/>
+    <circle r="15" fill="#58a6ff"/>
+  </g>
+
+  <text x="210" y="92" font-family="Segoe UI, Ubuntu, sans-serif" font-size="52" font-weight="800" fill="#e6edf3">GEARBOX</text>
+  <text x="210" y="128" font-family="Segoe UI, Ubuntu, sans-serif" font-size="19" fill="#8b949e">Selector automático de modelo y esfuerzo para Claude Code</text>
+  <text x="210" y="158" font-family="Segoe UI, Ubuntu, sans-serif" font-size="15" fill="#58a6ff">La marcha más baja que entregue resultado confiable — ahorra tokens sin sacrificar calidad</text>
+
+  <!-- Marchas -->
+  <g font-family="Consolas, monospace" font-size="13" font-weight="600">
+    <rect x="210" y="176" width="86" height="26" rx="13" fill="#1f6feb22" stroke="#1f6feb"/>
+    <text x="253" y="193" fill="#79c0ff" text-anchor="middle">G0 Haiku</text>
+    <rect x="304" y="176" width="96" height="26" rx="13" fill="#1f6feb22" stroke="#1f6feb"/>
+    <text x="352" y="193" fill="#79c0ff" text-anchor="middle">G2 Sonnet</text>
+    <rect x="408" y="176" width="106" height="26" rx="13" fill="#1f6feb22" stroke="#1f6feb"/>
+    <text x="461" y="193" fill="#79c0ff" text-anchor="middle">G3 opusplan</text>
+    <rect x="522" y="176" width="86" height="26" rx="13" fill="#1f6feb22" stroke="#1f6feb"/>
+    <text x="565" y="193" fill="#79c0ff" text-anchor="middle">G4 Opus</text>
+    <rect x="616" y="176" width="96" height="26" rx="13" fill="#a371f722" stroke="#a371f7"/>
+    <text x="664" y="193" fill="#d2a8ff" text-anchor="middle">G5 Fable 5</text>
+  </g>
+</svg>
