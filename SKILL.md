@@ -28,9 +28,9 @@ description: >-
 | **G3 Planeación híbrida** | PRPs, features grandes multi-fase | opusplan | recomendar `/model opusplan` (Opus planea → Sonnet ejecuta, cambio automático) | Opus solo al planear |
 | **G3.5 Turno profundo** | UNA pregunta difícil aislada | ultrathink | escribir `ultrathink` en el prompt (sin cambiar nada) | $0 de cambio |
 | **G4 Crítico** | seguridad/PII, producción caída, debugging multi-sistema | Opus · high | recomendar `/model opus` | +40%/token, se paga si evita retrabajo |
-| **G5 Arquitectura** | blueprint de ecosistema, planeación anual, 1M contexto | Fable (sesión dedicada) | recomendar `claude --model fable` + GATE de costo | 2x Opus ($10/$50) — siempre con aprobación humana |
+| **G5 Arquitectura** | blueprint de ecosistema, infraestructura, decisiones multi-repo, 1M contexto | Fable (sesión dedicada) | recomendar `/model fable` o `claude --model fable` + GATE de costo | 2x Opus ($10/$50) — siempre con aprobación humana |
 
-Precios de referencia (2026-07): Haiku 4.5 $1/$5 · Sonnet 4.6 $3/$15 · Opus 4.8 $5/$25 · Fable 5 $10/$50 (por M tokens in/out).
+Precios de referencia (2026-07): Haiku 4.5 $1/$5 · Sonnet estándar $3/$15 (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus 4.8 $5/$25 · Fable 5 $10/$50 (por M tokens in/out).
 Usar siempre **alias** (`haiku`, `sonnet`, `opus`, `fable`), nunca versiones fijas — los alias heredan versiones nuevas automáticamente.
 
 ---
@@ -68,6 +68,45 @@ Reglas del bloque:
 | opusplan: Opus al planear → Sonnet al ejecutar | Harness, automático (si `/model opusplan` activo) |
 | Cambiar el modelo principal de la sesión | Humano — Claude da el comando exacto |
 | Sesión Fable (G5) | Humano — SIEMPRE gate de costo explícito |
+
+---
+
+## Regla G5 — Fable 5 sin humo
+
+Fable 5 es para decisiones grandes, ambiguas o de largo contexto. No recomendarlo por prestigio del tema, sino por la forma de la tarea.
+
+Recomendar G5 cuando la tarea pida:
+- Blueprint de arquitectura de producto, plataforma o ecosistema completo
+- Infraestructura, seguridad, datos, integraciones o tradeoffs difíciles
+- Analizar varios repos/documentos juntos sin perder contexto
+- Encontrar causa raíz de bugs complejos o problemas de producción
+- Convertir una visión ambigua en un plan ejecutable por fases
+
+No recomendar G5 cuando baste con Sonnet/Haiku:
+- Copy, SEO, prompts simples o brainstorming ligero
+- Fixes pequeños, formateo, renombres, logs o lectura mecánica
+- Implementar una tarea ya definida
+- Decisiones que se validan mejor con usuarios reales que con más razonamiento
+
+Ventana temporal (dato de contexto, no promesa permanente): Anthropic anunció Fable 5 disponible globalmente desde 2026-07-01. Para Pro, Max, Team y algunos Enterprise, está incluido hasta 50% de límites semanales hasta 2026-07-07; después requiere usage credits si el plan los permite. Si esta fecha ya pasó, no usarla como argumento de urgencia; mantener solo la regla de buen uso.
+
+Prompt recomendado al sugerir G5:
+
+```text
+Estoy usando Fable 5. No implementes todavía.
+Analiza el contexto completo y dame:
+1. arquitectura recomendada,
+2. riesgos y tradeoffs,
+3. plan por fases,
+4. qué debe ejecutar Sonnet,
+5. qué puede delegarse a Haiku,
+6. cuándo tendría sentido volver a Fable.
+```
+
+Reglas de honestidad:
+- Decir que Fable puede rechazar o hacer fallback en áreas sensibles por clasificadores de seguridad.
+- No prometer ahorro con Fable: se usa para evitar mala arquitectura o retrabajo caro, no para gastar menos por token.
+- Preferir `/model fable` al inicio de la tarea. Evitar cambiar a Fable a mitad de una conversación larga por pérdida de caché.
 
 ---
 

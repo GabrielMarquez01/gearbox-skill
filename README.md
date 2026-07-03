@@ -3,8 +3,9 @@
 ![Gearbox](assets/banner.svg)
 
 **Deja de pagar precio de Opus por tareas de Haiku.**
-Gearbox clasifica cada tarea, te recomienda el modelo y esfuerzo óptimos con el comando exacto,
-delega lo rutinario automáticamente, y muestra la marcha activa en azul bajo tu terminal.
+Gearbox es un **recomendador de modelo y esfuerzo para Claude Code**: clasifica cada tarea,
+te dice la marcha óptima con el comando exacto, delega lo rutinario automáticamente cuando puede,
+y muestra la marcha activa en azul bajo tu terminal.
 
 [![Instalar](https://img.shields.io/badge/⚙_INSTALAR-1_línea,_2_minutos-1f6feb?style=for-the-badge)](#-instalación)
 [![Licencia MIT](https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge)](LICENSE)
@@ -21,6 +22,33 @@ delega lo rutinario automáticamente, y muestra la marcha activa en azul bajo tu
 ![Demo](assets/demo.svg)
 
 Escribes tu tarea → Gearbox la clasifica → si conviene otra marcha, **pausa y te lo dice antes de gastar**: comando exacto, razón en una frase, y cuánto ahorras (o cuánto cuesta no cambiar). La línea azul de abajo siempre muestra tu marcha, modelo real y esfuerzo.
+
+## 🧭 No es otro statusline
+
+La mayoría de herramientas para Claude Code te dicen **cuánto gastaste**. Gearbox intenta ayudarte a decidir **antes de gastar**.
+
+| Herramienta | Punto fuerte | Modelos nuevos | Qué le falta frente a Gearbox |
+|---|---|---|---|
+| **ccusage statusline** | Costo real, gasto diario, burn rate, bloques de uso | Depende de su tabla de pricing y updates | Observa consumo; no recomienda cambiar de marcha por tarea |
+| **Claude Powerline** | Statusline pulido, temas, costo, soporte de pricing para `claude-fable-5` | Sí incluye Fable 5 en pricing | Muestra estado; no clasifica intención ni propone `/model`/`/effort` |
+| **CCometixLine** | Statusline robusto en Rust, TUI, reconocimiento flexible de modelos | Reconoce nuevas versiones por patrón, como Sonnet 5 | Buen display; no es un protocolo de decisión de costo/calidad |
+| **claude-code-statusline** | Simple, directo, muestra modelo/tokens/costo | Más centrado en Sonnet 4.5/Opus/Haiku | No cubre Fable 5 ni routing por complejidad |
+| **Claude Code nativo** | Aliases oficiales (`haiku`, `sonnet`, `opus`, `fable`, `best`, `opusplan`) | Sí, vía aliases oficiales | Te da las piezas; Gearbox pone la regla de decisión |
+
+**Posicionamiento:** ccusage/Powerline/CCometixLine son tableros. Gearbox es el copiloto que te dice cuándo bajar, mantener o subir de modelo.
+
+### Qué sí hace
+
+- Recomienda la marcha correcta antes de empezar una tarea.
+- Da el comando exacto: `/model opusplan`, `/model opus`, `/effort medium`, `claude --model fable`, etc.
+- Explica la razón en una frase y el impacto económico estimado.
+- Mantiene una bitácora para calibrar después con evidencia.
+
+### Qué no promete
+
+- No cambia el modelo principal sin el humano: Claude Code no expone un cambio automático universal para eso.
+- No compite con dashboards de gasto: puede convivir con `ccusage` o Powerline.
+- No activa Fable 5 solo: siempre requiere gate de costo explícito.
 
 ## ⚙ Instalación
 
@@ -48,9 +76,9 @@ Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json
 | **G3 Planeación** | PRPs, features grandes | **opusplan** | `/model opusplan` → 🤖 Opus planea, Sonnet ejecuta, cambia solo | Opus solo al planear |
 | **G3.5 Turno profundo** | 1 pregunta difícil | ultrathink | palabra `ultrathink` en el prompt | $0 de cambio |
 | **G4 Crítico** | seguridad, producción caída | Opus · high | `/model opus` | +40% que se paga solo |
-| **G5 Arquitectura** | ecosistema completo, tareas de días | **Fable 5** · max | `claude --model fable` + gate de costo | 2× Opus |
+| **G5 Arquitectura** | ecosistema completo, infraestructura, decisiones multi-repo | **Fable 5** · max | `/model fable` o `claude --model fable` + gate de costo | 2× Opus |
 
-Precios de referencia (jul 2026, por millón de tokens in/out): Haiku $1/$5 · Sonnet $3/$15 · Opus $5/$25 · **Fable 5 $10/$50**.
+Precios de referencia (jul 2026, por millón de tokens in/out): Haiku $1/$5 · Sonnet $3/$15 estándar (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus $5/$25 · **Fable 5 $10/$50**.
 
 ## 🧠 Cómo funciona
 
@@ -75,10 +103,43 @@ Tu prompt
 
 [Claude Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) es el modelo más capaz que Anthropic ha liberado (junio 2026, re-disponible desde julio tras los controles de exportación). Contexto de **1M tokens**, salida de 128k, hecho para tareas "más grandes que una sentada": arquitectura de sistemas, investigaciones de causa raíz, sesiones autónomas largas.
 
+### Ventana Fable 5: úsalo con intención
+
+Anthropic anunció que Fable 5 está disponible globalmente desde el **2026-07-01** en Claude Platform, Claude.ai, Claude Code y Claude Cowork. Para Pro, Max, Team y algunos planes Enterprise, está incluido hasta **50% de los límites semanales hasta el 2026-07-07**; después se usa vía créditos de uso si tu plan los tiene habilitados. Fuente: [Redeploying Fable 5](https://www.anthropic.com/news/redeploying-fable-5).
+
+Eso no significa "úsalo para todo". Significa: si tienes acceso incluido, conviene gastarlo en decisiones que cambian la dirección del proyecto.
+
+**Úsalo para:**
+- Blueprint de arquitectura de un producto o ecosistema completo
+- Infraestructura, seguridad, datos, integraciones y tradeoffs difíciles
+- Analizar varios repos/documentos juntos sin perder contexto
+- Encontrar causa raíz de bugs complejos o problemas de producción
+- Convertir una visión ambigua en plan de ejecución por fases
+
+**No lo uses para:**
+- Copy, SEO, prompts simples o brainstorming ligero
+- Fixes pequeños, formateo, renombres, logs o lectura mecánica
+- Implementar tareas ya definidas que Sonnet puede ejecutar bien
+- Preguntas que se validan mejor con usuarios reales que con más razonamiento
+
+Prompt recomendado para G5:
+
+```text
+Estoy usando Fable 5. No implementes todavía.
+Analiza el contexto completo y dame:
+1. arquitectura recomendada,
+2. riesgos y tradeoffs,
+3. plan por fases,
+4. qué debe ejecutar Sonnet,
+5. qué puede delegarse a Haiku,
+6. cuándo tendría sentido volver a Fable.
+```
+
 Gearbox lo trata como marcha especial:
 - **Nunca se activa solo** — siempre con gate de costo explícito (es 2× Opus: $10/$50)
-- Se usa en **sesión dedicada** (`claude --model fable`), no cambiando a media conversación
-- El punto dulce: cargar TODO tu ecosistema en el contexto de 1M y pedirle el blueprint completo — lo que ningún otro modelo puede sostener sin resumir
+- Se usa idealmente al inicio de una sesión dedicada (`/model fable` o `claude --model fable`), no a mitad de una tarea larga
+- El punto dulce: cargar tu ecosistema, restricciones y objetivos en el contexto de 1M y pedirle el blueprint completo
+- Si el tema toca ciberseguridad o biología, puede haber rechazos o fallback por clasificadores de seguridad; no es una falla de Gearbox
 
 También existe el alias `best`: usa Fable si tu organización tiene acceso, si no el mejor Opus.
 
@@ -97,6 +158,31 @@ Mythos 5 es **el mismo modelo que Fable 5 pero con salvaguardas levantadas** en 
 <details><summary><b>¿Cambia el modelo de mi sesión automáticamente?</b></summary>
 
 Lo que puede ser automático, lo es: las subtareas rutinarias van a Haiku vía subagentes sin preguntarte, y `opusplan` cambia solo entre Opus (planear) y Sonnet (ejecutar). El modelo **principal** de la sesión solo puede cambiarlo el humano — no existe API para que Claude se cambie a sí mismo — por eso Gearbox te da el comando exacto listo para copiar.
+</details>
+
+<details><summary><b>¿Gearbox es oficial de Anthropic?</b></summary>
+
+No. Gearbox es un proyecto open-source independiente de OpenGravity/Gabriel Marquez. Usa piezas oficiales de Claude Code como `statusLine`, aliases de modelo, skills, subagentes y comandos `/model`/`/effort`, pero no está afiliado ni respaldado por Anthropic.
+</details>
+
+<details><summary><b>¿Es seguro instalarlo con curl | bash?</b></summary>
+
+El instalador solo copia `SKILL.md`, `README.md`, `statusline.sh` y `reset.sh` a `~/.claude`, crea backup de `settings.json`, registra `statusLine` y agrega una directiva a `CLAUDE.md`. Aun así, si prefieres revisar antes de ejecutar, clona el repo y corre `bash install.sh` manualmente.
+</details>
+
+<details><summary><b>¿La ventana de Fable 5 hasta el 2026-07-07 significa uso gratis ilimitado?</b></summary>
+
+No. Anthropic anunció inclusión hasta 50% de límites semanales para Pro, Max, Team y algunos Enterprise hasta el 2026-07-07. No es ilimitado, puede depender del plan y después requiere usage credits si tu cuenta los tiene habilitados. Gearbox lo menciona como oportunidad temporal, no como promesa permanente.
+</details>
+
+<details><summary><b>¿Por qué no usar Fable 5 para todo mientras esté disponible?</b></summary>
+
+Porque Fable 5 cuesta más, consume límites más rápido y su valor real está en decisiones difíciles: arquitectura, infraestructura, raíz de bugs complejos y contexto grande. Para implementación normal, Sonnet suele ser mejor equilibrio. Para rutina, Haiku o subagentes baratos son suficientes.
+</details>
+
+<details><summary><b>¿Qué pasa si Fable 5 rechaza una tarea?</b></summary>
+
+Fable 5 tiene clasificadores de seguridad más estrictos, especialmente en áreas como ciberseguridad o biología. Puede rechazar o hacer fallback a otro modelo. Eso no rompe Gearbox: simplemente significa que conviene seguir con Opus/Sonnet o reformular la tarea de forma defensiva y legítima.
 </details>
 
 <details><summary><b>¿Funciona con plan Pro/Max o solo con API?</b></summary>
