@@ -31,10 +31,23 @@ Evitar imagenes con claims de ahorro garantizado. Mejor mostrar decision y clari
 
 ## Post para SaaS Factory
 
+Limites vistos en el formulario:
+
+- Titulo: 200 caracteres maximo.
+- Cuerpo: 20,000 caracteres maximo.
+
+Recomendacion: usar un titulo de 60-90 caracteres y un cuerpo de 1,200-2,000 caracteres. Es suficiente para explicar valor, oportunidad y pedir feedback sin parecer anuncio largo.
+
 Titulo sugerido:
 
 ```text
 Gearbox: una skill para usar mejor Claude Code antes de quemar tokens
+```
+
+Titulo alternativo mas fuerte:
+
+```text
+Gearbox: decide cuando usar Haiku, Sonnet, Opus o Fable 5
 ```
 
 Texto:
@@ -67,6 +80,49 @@ https://github.com/GabrielMarquez01/gearbox-skill
 
 Me interesa feedback de quienes usan Claude Code en serio:
 1. ¿que tareas ustedes mandarian a Fable?
+2. ¿que reglas agregarian para no sobrepagar modelos?
+3. ¿les serviria una bitacora semanal de ahorro/retrabajo?
+```
+
+Version recomendada para publicar primero:
+
+```text
+Comunidad, les comparto Gearbox: una skill/recomendador para usar mejor Claude Code antes de quemar tokens o limites.
+
+La idea es simple:
+no siempre necesitamos el modelo mas caro.
+
+Gearbox clasifica cada tarea en marchas:
+
+G0: rutina -> Haiku / subagentes
+G1-G2: contenido y ejecucion -> Sonnet
+G3: planeacion -> opusplan
+G4: critico -> Opus
+G5: arquitectura grande -> Fable 5
+
+No promete magia.
+No cambia automaticamente el modelo principal.
+Te dice que marcha conviene, por que, y el comando exacto para cambiar.
+
+La regla importante: Fable 5 no es para todo.
+
+Yo lo usaria para:
+- arquitectura e infraestructura
+- decisiones multi-repo
+- root-cause dificil
+- planes de producto grandes
+- convertir una idea ambigua en plan ejecutable
+
+No lo usaria para copy, fixes pequeños, logs o tareas que Sonnet puede ejecutar bien.
+
+Contexto oportuno:
+Anthropic anuncio que Fable 5 esta incluido hasta 50% de limites semanales para ciertos planes hasta el 2026-07-07. Justo por eso conviene usarlo con intencion.
+
+Repo:
+https://github.com/GabrielMarquez01/gearbox-skill
+
+Me interesa feedback:
+1. ¿que tareas mandarian ustedes a Fable?
 2. ¿que reglas agregarian para no sobrepagar modelos?
 3. ¿les serviria una bitacora semanal de ahorro/retrabajo?
 ```
@@ -189,4 +245,3 @@ No. Es open-source independiente. Usa capacidades oficiales de Claude Code: skil
 - 3 comentarios con casos reales de uso.
 - 1 PR o issue de mejora.
 - 1 usuario reportando ahorro, menor retrabajo o mejor decision de modelo.
-
