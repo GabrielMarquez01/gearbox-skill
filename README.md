@@ -99,6 +99,27 @@ Tu prompt
 2. 🔄 Correr lo difícil en el modelo barato → retrabajos que cuestan más que el ahorro
 3. 👻 El invisible: cambiar de modelo **a mitad de sesión** reinicia el caché de prompt (descuento del 90% perdido — la siguiente respuesta relee TODO tu historial a precio completo). Gearbox recomienda en el momento correcto: al inicio de la tarea.
 
+## 💰 Números reales (datos de una sesión real, 2026-07-04)
+
+> Para el usuario técnico y no técnico: esto es lo que pasa cuando divides los roles bien.
+
+Una sesión de trabajo intenso (~6 horas, 15 deploys, 30 archivos editados, auditoría de seguridad completa):
+
+| Escenario | Costo estimado | Comparado con todo en Fable |
+|---|---|---|
+| Todo en **Fable 5** | $25–50 | base (el más caro) |
+| **Fable planea + Opus ejecuta** (lo que ocurrió sin Gearbox activo) | ~$12–25 | **−50%** |
+| **Fable planea + Sonnet ejecuta** (lo que recomienda Gearbox) | ~$7–15 | **−70%** |
+| Rutina delegada a **Haiku** | ~$2.50–5 | **−90%** |
+
+**En cristiano:** si usas Fable para pensar el problema difícil y Sonnet para construir la solución, pagas 3 veces menos que si dejas a Fable hacer todo. Y si además delegas las búsquedas y formateos a Haiku, llegas a 10× más barato.
+
+**Lo que reveló la sesión:** el Gearbox detectó que la sesión corría en Opus cuando debía correr en Sonnet — diferencia invisible, pero ~20% de sobre-pago. Ese hallazgo originó la detección de desincronización (`⚠ desync`) que ahora incluye el statusline.
+
+> Margen de error: ±20% (los tokens exactos solo los ve Anthropic en `/usage`). Los ratios son fijos — vienen de precios públicos, no de estimaciones.
+
+**Para usuarios con plan Pro/Max:** el ahorro se traduce en *consumir tus límites más lento* — Fable consume ~2× más rápido que Opus, y Haiku consume ~5× menos que Sonnet. Mismo trabajo, más tiempo antes de toparte con el techo.
+
 ## ⚡ Guía de eficiencia (úsala aunque no instales nada)
 
 El Gearbox elige el modelo por ti, pero **la mitad del ahorro son hábitos** — y esos funcionan con
@@ -278,9 +299,20 @@ O a mano: `SKILL.md` → `~/.claude/skills/gearbox/` · `statusline.sh` y `reset
 ~/.claude/gearbox/log.jsonl         ← bitácora de calibración
 ```
 
-## 🤝 Contribuir
+## 🤝 Contribuir y dar retroalimentación
 
-PRs bienvenidos: marchas nuevas, calibraciones con evidencia, ports (PowerShell), traducciones. Si Gearbox te ahorró dinero, una ⭐ ayuda a que más gente deje de quemar tokens.
+**¿Te funcionó? ¿No te funcionó? Queremos saberlo.**
+
+La próxima iteración del Gearbox se construye con evidencia real de la comunidad, no con suposiciones. Tres formas de participar:
+
+- **⭐ Dale una estrella** si lo instalaste y te fue útil — es la señal más simple de que vale la pena seguir mejorándolo.
+- **[Abre un issue](https://github.com/GabrielMarquez01/gearbox-skill/issues)** si encontraste un caso donde la recomendación estuvo mal, el statusline mintió, o hay una marcha que falta. Un caso real con contexto vale más que diez sugerencias abstractas.
+- **[Manda un PR](https://github.com/GabrielMarquez01/gearbox-skill/pulls)** si tienes una calibración con evidencia, un port (PowerShell, Fish), o una traducción.
+
+**¿Quieres recibir las actualizaciones?**
+Dale **Watch → Releases only** al repo (botón arriba a la derecha). Cada iteración importante sale como release con notas de qué cambió y por qué — sin spam, solo cuando hay algo concreto.
+
+> El Gearbox se itera igual que funciona: usar → medir con datos reales → mejorar solo lo que la evidencia señala.
 
 ## Licencia
 
@@ -288,4 +320,4 @@ PRs bienvenidos: marchas nuevas, calibraciones con evidencia, ports (PowerShell)
 
 ---
 
-<div align="center"><sub>⚙ <b>Gearbox</b> — evolución del Gearbox Protocol de OpenGravity · construido con la filosofía SaaS Factory: usar → medir → calibrar</sub></div>
+<div align="center"><sub>⚙ <b>Gearbox</b> — evolución del Gearbox Protocol de OpenGravity · usar → medir → calibrar</sub></div>
