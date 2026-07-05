@@ -10,7 +10,8 @@ que se acumulan sin que los veas:
 2. **Contexto pesado** (mientras más larga la charla, más caro cada mensaje — aun con caché)
 3. **Herramientas que llenan el contexto** (cada resultado de una tool/MCP se queda cargado el resto de la sesión)
 
-Estas 8 prácticas atacan exactamente eso.
+Estas 8 prácticas atacan exactamente eso — y al final, un protocolo para **exprimir cada modelo
+caro** cuando trabajas con varios en un mismo flujo.
 
 ---
 
@@ -100,6 +101,39 @@ Con suscripción (Pro/Max) esto se traduce en **consumir tus límites más lento
 **dinero directo**. En ambos casos: mismos resultados, menos desperdicio.
 
 ---
+
+## 🔀 El handoff: cómo no desperdiciar un modelo caro
+
+Elegir el modelo correcto es la mitad. La otra mitad es **cómo lo diriges**. Una sesión de un
+modelo caro (el "arquitecto") que explora sin rumbo cuesta más que diez sesiones baratas. El
+patrón que más ahorra es tratar cada modelo según su rol y hacer el traspaso limpio:
+
+- **El caro piensa, diseña y decide.** No lo pongas a poner ladrillos.
+- **El barato ejecuta, edita y documenta.** Es quien construye lo que el caro diseñó.
+- **La preparación** (juntar contexto, reducir ambigüedad, volver los hallazgos un plan) es
+  trabajo de bajo costo que multiplica el valor de la sesión cara.
+
+### Antes de llamar al modelo caro — prepáralo (5 puntos)
+1. **Objetivo** en una frase.
+2. **Rutas exactas** que debe mirar (no "busca por ahí").
+3. **Qué NO debe hacer** (límites explícitos: no editar, no salirse del alcance).
+4. **Hipótesis** a confirmar o refutar (le das dirección, no una hoja en blanco).
+5. **Salida estructurada** que esperas (un formato, no prosa libre).
+
+> Un modelo caro con estos 5 puntos entrega en una sesión lo que sin ellos toma tres.
+
+### Durante la sesión cara — mantenlo en carril
+- Concede **permisos puntuales**, no permisos amplios de edición.
+- Pide **evidencia con archivo + línea**, no afirmaciones.
+- **Corta la exploración** en cuanto se salga del objetivo.
+
+### Después — convierte, no ejecutes a ciegas
+- Vuelve los hallazgos un **checklist accionable** para el modelo barato.
+- **Separa las decisiones de la implementación** — lo que requiere tu OK vs lo mecánico.
+- Ejecuta **solo lo aprobado.**
+
+> Este patrón se afina **combinando asistentes**: un modelo prepara el contexto, otro diseña,
+> otro ejecuta. La eficiencia real no nace de casarse con un modelo, sino de orquestarlos por rol.
 
 ## 🔭 Hacia dónde va esto
 
