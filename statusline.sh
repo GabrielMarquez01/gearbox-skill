@@ -26,5 +26,19 @@ runtime_effort=$(printf '%s' "$input" | sed -n 's/.*"effort"[[:space:]]*:[[:spac
 [ -z "$runtime_effort" ] && runtime_effort=$(printf '%s' "$input" | sed -n 's/.*"effort"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
 [ -n "$runtime_effort" ] && effort="$runtime_effort"
 
-# Azul ANSI (34). Formato: ⚙ G2 · Sonnet 4.6 · high · ejecución
-printf '\033[34m⚙ %s · %s · %s · %s\033[0m' "$gear" "$model" "$effort" "$task"
+# Detección de desincronización: el modelo REAL (harness, fuente de verdad) vs la marcha
+# guardada en state.json. Evita que el statusline mienta — p.ej. mostrar G2 (Sonnet) mientras
+# la sesión corre en Opus, ocultando que se paga de más. Marca " ⚠ desync" cuando no cuadran.
+desync=""
+case "$model" in
+  *Fable*)  [ "$gear" != "G5" ] && desync=" ⚠ desync" ;;
+  *Opus*)   case "$gear" in G3|G3.5|G4) ;; *) desync=" ⚠ desync" ;; esac ;;
+  *Haiku*)  [ "$gear" != "G0" ] && desync=" ⚠ desync" ;;
+esac
+
+# Azul ANSI (34); el aviso de desync en amarillo (33) para que salte a la vista.
+if [ -n "$desync" ]; then
+  printf '\033[34m⚙ %s · %s · %s · %s\033[0m\033[33m%s\033[0m' "$gear" "$model" "$effort" "$task" "$desync"
+else
+  printf '\033[34m⚙ %s · %s · %s · %s\033[0m' "$gear" "$model" "$effort" "$task"
+fi

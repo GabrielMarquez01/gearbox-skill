@@ -135,16 +135,11 @@ patrón que más ahorra es tratar cada modelo según su rol y hacer el traspaso 
 > Este patrón se afina **combinando asistentes**: un modelo prepara el contexto, otro diseña,
 > otro ejecuta. La eficiencia real no nace de casarse con un modelo, sino de orquestarlos por rol.
 
-## 🔭 Hacia dónde va esto
-
-Estas prácticas son **hábitos** — funcionan hoy, a mano. El siguiente paso natural es que dejen de
-depender de que te acuerdes: que la herramienta **mida tu gasto real, te muestre dónde ahorraste, y
-afine su precisión con tus propios datos** (la filosofía *usar → medir → calibrar*). El Gearbox ya
-registra cada decisión con ese fin; hacerlo visible y medible es la dirección de trabajo.
+---
 
 Si una de estas prácticas te ahorró tiempo o dinero, **abre un issue contándolo** — la evidencia
-real de la comunidad es lo que decide qué se automatiza siguiente.
+real de la comunidad es lo que hace mejor la guía.
 
 ---
 
-<div align="center"><sub>⚡ Parte de <b>Gearbox</b> · filosofía SaaS Factory: usar → medir → calibrar · <a href="README.md">volver al README</a></sub></div>
+<div align="center"><sub>⚡ Parte de <b>Gearbox</b> · <a href="README.md">volver al README</a></sub></div>
