@@ -125,6 +125,18 @@ El statusline (`~/.claude/gearbox/statusline.sh`) lo muestra en azul bajo la ter
 `⚙ G3 · Opus 4.8 · high · planeación`
 (El modelo mostrado es el REAL de la sesión — lo inyecta el harness, no el estado.)
 
+**`⚠desync` — qué significa y cómo resolverlo:**
+Aparece en amarillo cuando el modelo real no corresponde a la marcha guardada en `state.json`.
+Ejemplo: `G2 · Fable 5 · high · ejecución ⚠desync` → Gearbox cree que es Sonnet pero corre Fable.
+
+| Caso | Solución |
+|---|---|
+| La sesión sí debe ser G5/Fable | `/set G5` o `echo '{"gear":"G5"...}' > state.json` |
+| Querías Sonnet, Fable arrancó por error | `/model sonnet` |
+| Desync al abrir sesión nueva | `~/.claude/gearbox/set.sh G2` para resetear |
+
+No rompe nada — solo avisa. Ignóralo solo si la discrepancia es intencional.
+
 ### Bitácora de calibración (una línea por clasificación)
 
 ```bash

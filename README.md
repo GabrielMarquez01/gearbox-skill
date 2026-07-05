@@ -80,6 +80,31 @@ Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json
 
 Precios de referencia (jul 2026, por millón de tokens in/out): Haiku $1/$5 · Sonnet $3/$15 estándar (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus $5/$25 · **Fable 5 $10/$50**.
 
+## ⚠️ ¿Qué significa el aviso `⚠desync`?
+
+Una duda frecuente cuando ves el statusline por primera vez:
+
+![Ejemplo de desync: G2 · Fable 5 · high · ejecución ⚠desync](assets/desync-example.png)
+
+El statusline dice `G2 · Fable 5 · high · ejecución ⚠desync`.
+
+**Lo que está pasando:** el Gearbox tiene guardado en `state.json` que la marcha es G2 (ejecución con Sonnet), pero el harness de Claude Code detecta que el modelo real que está corriendo es **Fable 5** — 3× más caro. Son incompatibles, y el aviso en amarillo te lo dice antes de que sigas gastando sin saberlo.
+
+**¿Por qué pasa?**
+- Arrancaste una sesión con Fable (auditoría, arquitectura) y no actualizaste la marcha en Gearbox.
+- Cambiaste de modelo con `/model fable` pero Gearbox sigue con el estado de la sesión anterior.
+- En general: `state.json` quedó desincronizado con el modelo real.
+
+**Cómo resolverlo — elige según tu caso:**
+
+| Si… | Haz esto |
+|---|---|
+| La sesión **sí** debe ser con Fable (G5) | Actualizar la marcha: `/set G5` |
+| Querías Sonnet pero Fable arrancó por error | Cambiar modelo: `/model sonnet` |
+| Ves desync al abrir una sesión nueva | Correr `~/.claude/gearbox/set.sh G2` para resetear el estado |
+
+> **El `⚠desync` no rompe nada** — solo te avisa. Puedes ignorarlo si sabes que la discrepancia es intencional (por ejemplo, Fable en una sesión de diagnóstico corta). Lo que no queremos es que corra callado sin que lo notes.
+
 ## 🧠 Cómo funciona
 
 ```
