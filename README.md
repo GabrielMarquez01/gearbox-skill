@@ -99,6 +99,20 @@ Tu prompt
 2. 🔄 Correr lo difícil en el modelo barato → retrabajos que cuestan más que el ahorro
 3. 👻 El invisible: cambiar de modelo **a mitad de sesión** reinicia el caché de prompt (descuento del 90% perdido — la siguiente respuesta relee TODO tu historial a precio completo). Gearbox recomienda en el momento correcto: al inicio de la tarea.
 
+## ⚡ Guía de eficiencia (úsala aunque no instales nada)
+
+El Gearbox elige el modelo por ti, pero **la mitad del ahorro son hábitos** — y esos funcionan con
+o sin la skill. Reunimos las 8 prácticas que más bajan el gasto (sesiones, contexto, MCP, caché)
+en una guía práctica de "ábrela y úsala":
+
+**→ [EFICIENCIA.md](EFICIENCIA.md)** — 8 prácticas + checklist rápido, sin setup, sin dependencias.
+
+Un adelanto de las que más pesan:
+- **Higiene de sesión** — `/compact` a media tarea larga, `/clear` al cambiar de tema
+- **Cuida los MCP** — cada resultado se queda en contexto; desconecta lo que no usas, no dupliques
+- **No re-consultes lo que no cambia** — cachea el esquema/config en un archivo, no en cada sesión
+- **Mide** — corre `/usage` para ver de dónde viene tu gasto antes de optimizar
+
 ## 🔮 Fable 5 — la marcha G5
 
 [Claude Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) es el modelo más capaz que Anthropic ha liberado (junio 2026, re-disponible desde julio tras los controles de exportación). Contexto de **1M tokens**, salida de 128k, hecho para tareas "más grandes que una sentada": arquitectura de sistemas, investigaciones de causa raíz, sesiones autónomas largas.
