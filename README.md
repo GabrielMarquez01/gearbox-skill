@@ -80,30 +80,67 @@ Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json
 
 Precios de referencia (jul 2026, por millón de tokens in/out): Haiku $1/$5 · Sonnet $3/$15 estándar (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus $5/$25 · **Fable 5 $10/$50**.
 
-## ⚠️ ¿Qué significa el aviso `⚠desync`?
+## 🎯 Qué significa `G5*` (el asterisco)
 
-Una duda frecuente cuando ves el statusline por primera vez:
+A partir de la **V2** el statusline muestra la marcha **derivada del modelo real**, no la guardada. El asterisco aparece cuando las dos difieren:
 
-![Ejemplo de desync: G2 · Fable 5 · high · ejecución ⚠desync](assets/desync-example.png)
+```
+⚙ G5* · Fable 5 · high · ejecución · ≈5x  · state=G2
+```
 
-El statusline dice `G2 · Fable 5 · high · ejecución ⚠desync`.
-
-**Lo que está pasando:** el Gearbox tiene guardado en `state.json` que la marcha es G2 (ejecución con Sonnet), pero el harness de Claude Code detecta que el modelo real que está corriendo es **Fable 5** — 3× más caro. Son incompatibles, y el aviso en amarillo te lo dice antes de que sigas gastando sin saberlo.
-
-**¿Por qué pasa?**
-- Arrancaste una sesión con Fable (auditoría, arquitectura) y no actualizaste la marcha en Gearbox.
-- Cambiaste de modelo con `/model fable` pero Gearbox sigue con el estado de la sesión anterior.
-- En general: `state.json` quedó desincronizado con el modelo real.
-
-**Cómo resolverlo — elige según tu caso:**
-
-| Si… | Haz esto |
+| Parte | Qué significa |
 |---|---|
-| La sesión **sí** debe ser con Fable (G5) | Actualizar la marcha: `/set G5` |
-| Querías Sonnet pero Fable arrancó por error | Cambiar modelo: `/model sonnet` |
-| Ves desync al abrir una sesión nueva | Correr `~/.claude/gearbox/set.sh G2` para resetear el estado |
+| `G5*` | El modelo real (Fable) corresponde a G5; el asterisco dice "pero state.json guarda otra cosa" |
+| `≈5x` | Multiplicador vs Sonnet base — brújula de costo, **no factura** |
+| `state=G2` | Ámbar: lo que está almacenado en state.json |
 
-> **El `⚠desync` no rompe nada** — solo te avisa. Puedes ignorarlo si sabes que la discrepancia es intencional (por ejemplo, Fable en una sesión de diagnóstico corta). Lo que no queremos es que corra callado sin que lo notes.
+**Para resolver el asterisco:**
+
+```bash
+~/.claude/gearbox/set.sh G5 arquitectura high   # anclar a G5
+~/.claude/gearbox/set.sh auto                   # o volver a auto (nunca habrá asterisco)
+```
+
+> El asterisco nunca bloquea trabajo. Es solo información.
+
+## ⚙ `gear=auto` — el modo recomendado
+
+`reset.sh` escribe `{"gear":"auto"}` al inicio de cada sesión. Con `auto`:
+- El statusline muestra la marcha derivada del modelo real, sin asterisco nunca.
+- Si arrancas con Fable → muestra G5. Si usas Sonnet → muestra G2. Automático.
+- Solo usa `set.sh` cuando quieras **anclar** una marcha específica (y limpiarla con `set.sh auto` al terminar).
+
+## 🕹 Usar `set.sh`
+
+```bash
+# Fijar marcha (con task y effort opcionales)
+~/.claude/gearbox/set.sh G5 arquitectura high
+~/.claude/gearbox/set.sh G2 ejecución high
+~/.claude/gearbox/set.sh G0 rutina low
+
+# Volver a modo auto
+~/.claude/gearbox/set.sh auto
+
+# Marchas válidas: auto G0 G1 G2 G3 G3.5 G4 G5
+```
+
+`set.sh` escribe `state.json`, llama a `log.sh` (bitácora automática) y confirma con un mensaje.
+
+## 💲 El multiplicador `≈Nx` — brújula, no factura
+
+`prices.json` guarda multiplicadores relativos vs Sonnet base. El statusline los muestra como orientación:
+
+| Modelo | Multiplicador |
+|---|---|
+| Haiku | ≈0.5x |
+| Sonnet | ≈1x (base) |
+| Opus | ≈2.5x |
+| Fable | ≈5x |
+
+**Fuente final siempre: `/usage`** — el multiplicador es aproximado y no reemplaza la factura real.
+Si el payload de Claude Code trae un costo real de sesión (`cost_usd`), el statusline lo muestra como `~$X est.`
+
+Para actualizar precios: editar `~/.claude/gearbox/prices.json` (no se sobrescribe en reinstalaciones).
 
 ## 🧠 Cómo funciona
 

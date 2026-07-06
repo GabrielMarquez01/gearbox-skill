@@ -1,0 +1,11 @@
+{
+  "updated": "2026-07-06",
+  "base": "sonnet",
+  "_note": "Precios intro Sonnet 5 ($2/$10 hasta 2026-08-31); relative = multiplicador vs Sonnet base. Actualizar manualmente si cambian tarifas — usar /usage como fuente final.",
+  "models": {
+    "haiku":  { "input": 1,  "output": 5,  "relative": 0.5 },
+    "sonnet": { "input": 2,  "output": 10, "relative": 1   },
+    "opus":   { "input": 5,  "output": 25, "relative": 2.5 },
+    "fable":  { "input": 10, "output": 50, "relative": 5   }
+  }
+}

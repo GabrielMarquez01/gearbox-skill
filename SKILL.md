@@ -112,38 +112,66 @@ Reglas de honestidad:
 
 ## Estado y Bitácora
 
-### Estado visible (statusline)
-Al cambiar de marcha, actualizar `~/.claude/gearbox/state.json`:
+### Estado visible (statusline V2)
 
-```bash
-cat > ~/.claude/gearbox/state.json <<'EOF'
-{"gear":"G3","task":"planeación","effort":"high"}
-EOF
+El statusline V2 **deriva la marcha del modelo real** — no del estado guardado.
+El modelo real es la fuente de verdad; `state.json` es una intención que se contrasta.
+
+```
+⚙ G5 · Fable 5 · high · arquitectura · ≈5x
 ```
 
-El statusline (`~/.claude/gearbox/statusline.sh`) lo muestra en azul bajo la terminal:
-`⚙ G3 · Opus 4.8 · high · planeación`
-(El modelo mostrado es el REAL de la sesión — lo inyecta el harness, no el estado.)
+#### `gear=auto` (por defecto)
 
-**`⚠desync` — qué significa y cómo resolverlo:**
-Aparece en amarillo cuando el modelo real no corresponde a la marcha guardada en `state.json`.
-Ejemplo: `G2 · Fable 5 · high · ejecución ⚠desync` → Gearbox cree que es Sonnet pero corre Fable.
+`reset.sh` escribe `{"gear":"auto",...}`. Con `auto`, el statusline muestra la marcha
+derivada del modelo sin ningún aviso. Recomendado: deja `auto` salvo que quieras anclar
+una marcha explícita.
 
-| Caso | Solución |
-|---|---|
-| La sesión sí debe ser G5/Fable | `/set G5` o `echo '{"gear":"G5"...}' > state.json` |
-| Querías Sonnet, Fable arrancó por error | `/model sonnet` |
-| Desync al abrir sesión nueva | `~/.claude/gearbox/set.sh G2` para resetear |
+#### `GN*` — qué significa el asterisco
 
-No rompe nada — solo avisa. Ignóralo solo si la discrepancia es intencional.
+El asterisco aparece cuando `state.json` tiene una marcha distinta al modelo real:
 
-### Bitácora de calibración (una línea por clasificación)
-
-```bash
-echo '{"ts":"2026-07-02T21:00:00Z","gear":"G2","task":"UI cuidadores","skill":"","retrabajo":false}' >> ~/.claude/gearbox/log.jsonl
+```
+⚙ G5* · Fable 5 · high · ejecución · ≈5x  · state=G2
 ```
 
-Campos: `ts` (ISO), `gear`, `task` (3-6 palabras), `skill` (si aplica), `retrabajo` (true si la tarea tuvo que rehacerse — señal de marcha insuficiente).
+Aquí: el modelo real es Fable (→ G5) pero `state.json` dice G2. El `*` lo advierte en azul;
+`state=G2` en ámbar dice exactamente qué está almacenado. Para resolverlo:
+
+```bash
+~/.claude/gearbox/set.sh G5 arquitectura high   # anclar a G5
+~/.claude/gearbox/set.sh auto                   # o volver a auto (sin asterisco nunca)
+```
+
+No rompe nada — solo informa. El asterisco nunca bloquea trabajo.
+
+#### `≈Nx` — el multiplicador
+
+Brújula de costo relativo vs Sonnet base, leída de `~/.claude/gearbox/prices.json`.
+**No es una factura** — usa `/usage` como fuente final. Si el payload de Claude Code trae
+un costo real de sesión, el statusline lo muestra como `~$X est.`.
+
+### Actualizar la marcha con `set.sh`
+
+```bash
+~/.claude/gearbox/set.sh G5 arquitectura high   # fijar a G5
+~/.claude/gearbox/set.sh G2 ejecución high      # volver a Sonnet/ejecución
+~/.claude/gearbox/set.sh auto                   # modo auto (recomendado al cerrar sesión especial)
+```
+
+Marchas válidas: `auto G0 G1 G2 G3 G3.5 G4 G5`.
+El segundo y tercer argumento son opcionales (defaults por marcha: tarea y effort=high).
+
+### Bitácora de calibración (log.jsonl)
+
+`log.sh` agrega una línea JSONL automáticamente con cada llamada a `set.sh` o `reset.sh`:
+
+```json
+{"ts":"2026-07-06T22:44:32Z","gear":"G5","task":"arquitectura","effort":"high","action":"set","model":"Fable 5"}
+```
+
+Para calibración manual: agregar `retrabajo: true` si la tarea tuvo que rehacerse
+(señal de marcha insuficiente). El análisis de `log.jsonl` alimenta la Calibración Fase 2.
 
 ---
 

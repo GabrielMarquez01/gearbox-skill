@@ -25,7 +25,18 @@ fetch "SKILL.md"      "$SKILL_DIR/SKILL.md"
 fetch "README.md"     "$SKILL_DIR/README.md"
 fetch "statusline.sh" "$GB_DIR/statusline.sh"
 fetch "reset.sh"      "$GB_DIR/reset.sh"
-chmod +x "$GB_DIR/statusline.sh" "$GB_DIR/reset.sh"
+fetch "set.sh"        "$GB_DIR/set.sh"
+fetch "log.sh"        "$GB_DIR/log.sh"
+chmod +x "$GB_DIR/statusline.sh" "$GB_DIR/reset.sh" "$GB_DIR/set.sh" "$GB_DIR/log.sh"
+
+# prices.json: solo instalar si no existe (no sobrescribir precios personalizados)
+if [ ! -f "$GB_DIR/prices.json" ]; then
+  fetch "prices.json" "$GB_DIR/prices.json"
+  echo "  ✅ prices.json instalado"
+else
+  echo "  ✅ prices.json ya existe — conservado (no sobrescrito)"
+fi
+
 bash "$GB_DIR/reset.sh"
 echo "  ✅ Skill y scripts instalados"
 
@@ -79,8 +90,13 @@ else
 fi
 
 echo ""
-echo "⚙ Gearbox instalado. Reinicia Claude Code y verás la marcha en azul bajo la terminal:"
-echo "   ⚙ G2 · <tu modelo> · high · ejecución"
+echo "⚙ Gearbox V2 instalado. Reinicia Claude Code y verás la marcha en azul:"
+echo "   ⚙ G2 · <tu modelo> · high · ejecución · ≈1x"
+echo ""
+echo "   Comandos útiles:"
+echo "   ~/.claude/gearbox/set.sh G5 arquitectura high   # fijar marcha"
+echo "   ~/.claude/gearbox/set.sh auto                   # modo auto (recomendado)"
+echo "   ~/.claude/gearbox/reset.sh                      # volver a auto"
 echo ""
 echo "   Desinstalar: rm -rf ~/.claude/gearbox ~/.claude/skills/gearbox"
 echo "                + restaurar ~/.claude/settings.json.backup-gearbox"
