@@ -27,7 +27,7 @@ description: >-
 | **G2 Ejecución** (default) | features con contrato claro, UI, DB, fixes, deploys | Sonnet · high | default de sesión | base $3/$15 por M tokens |
 | **G3 Planeación híbrida** | PRPs, features grandes multi-fase | opusplan | recomendar `/model opusplan` (Opus planea → Sonnet ejecuta, cambio automático) | Opus solo al planear |
 | **G3.5 Turno profundo** | UNA pregunta difícil aislada | ultrathink | escribir `ultrathink` en el prompt (sin cambiar nada) | $0 de cambio |
-| **G4 Crítico** | seguridad/PII, producción caída, debugging multi-sistema | Opus · high | recomendar `/model opus` | +40%/token, se paga si evita retrabajo |
+| **G4 Crítico** | seguridad/PII, producción caída, debugging multi-sistema | Opus · high | recomendar `/model opus` | ≈1.7× Sonnet estándar (2.5× con intro), se paga si evita retrabajo |
 | **G5 Arquitectura** | blueprint de ecosistema, infraestructura, decisiones multi-repo, 1M contexto | Fable (sesión dedicada) | recomendar `/model fable` o `claude --model fable` + GATE de costo | 2x Opus ($10/$50) — siempre con aprobación humana |
 
 Precios de referencia (2026-07): Haiku 4.5 $1/$5 · Sonnet estándar $3/$15 (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus 4.8 $5/$25 · Fable 5 $10/$50 (por M tokens in/out).
@@ -42,7 +42,9 @@ Usar siempre **alias** (`haiku`, `sonnet`, `opus`, `fable`), nunca versiones fij
 2. COMPARAR → ¿marcha recomendada ≠ configuración actual de la sesión?
    ├─ NO → ejecutar directo, sin ruido
    └─ SÍ → 3. PAUSA: emitir bloque de recomendación ANTES de empezar el trabajo
-3. ACTUALIZAR el estado y la bitácora (ver abajo) — siempre, haya o no cambio
+3. REGISTRAR la decisión en la bitácora — siempre, haya o no cambio de marcha, con el
+   comando literal (ver "Bitácora de calibración" abajo):
+   ~/.claude/gearbox/log.sh decision <gear_actual> <gear_recomendada> "<task>" [skill] [doc]
 ```
 
 ### Formato del bloque de recomendación (obligatorio, literal)
@@ -51,7 +53,7 @@ Usar siempre **alias** (`haiku`, `sonnet`, `opus`, `fable`), nunca versiones fij
 ⚙ GEARBOX → conviene subir a Opus / Alto
    Comando:  /model opus
    Razón:    debugging multi-sistema en producción
-   Economía: +40%/token pero evita retrabajo; cambiar AHORA (el caché se reinicia al cambiar)
+   Economía: ≈1.7× Sonnet estándar pero evita retrabajo; cambiar AHORA (el caché se reinicia al cambiar)
 ```
 
 Reglas del bloque:
@@ -151,6 +153,24 @@ Brújula de costo relativo vs Sonnet base, leída de `~/.claude/gearbox/prices.j
 **No es una factura** — usa `/usage` como fuente final. Si el payload de Claude Code trae
 un costo real de sesión, el statusline lo muestra como `~$X est.`.
 
+#### Barra de `/usage` — cuánto llevas quemado de tus límites
+
+Desde Claude Code v2.1.80 el payload de statusline trae `rate_limits.{five_hour,seven_day}.used_percentage`
+— el mismo dato que `/usage`, sin API externa ni polling. El statusline lo muestra así:
+
+```
+⚙ G2 · Sonnet 5 · high · ejecución · ≈1x · ▓▓▓░░ 61% 7d · 24% 5h
+```
+
+- **7d** (el recurso escaso en plan Pro): barra de 5 bloques `▓`/`░` + porcentaje.
+- **5h**: solo el número, sin barra (cambia rápido, la barra marearía).
+- Colores: <50% verde · 50–79% ámbar · ≥80% rojo.
+- Si el payload no trae `rate_limits` (API, plan free, primer turno de la sesión), no se
+  muestra nada — cada ventana puede faltar por separado, nunca se inventa.
+- Pieza gearbox-nativa: si 7d≥80% y la marcha activa es G4/G5, aparece un hint ámbar:
+  `⚠ 7d al NN% en marcha cara — considera bajar`. El `≈Nx` dice qué tan rápido quemas;
+  la barra dice cuánto llevas quemado; el hint conecta ambos con la decisión de marcha.
+
 ### Actualizar la marcha con `set.sh`
 
 ```bash
@@ -162,23 +182,72 @@ un costo real de sesión, el statusline lo muestra como `~$X est.`.
 Marchas válidas: `auto G0 G1 G2 G3 G3.5 G4 G5`.
 El segundo y tercer argumento son opcionales (defaults por marcha: tarea y effort=high).
 
-### Bitácora de calibración (log.jsonl)
+### Bitácora de calibración: dos ríos separados
 
-`log.sh` agrega una línea JSONL automáticamente con cada llamada a `set.sh` o `reset.sh`:
+`log.sh` escribe en dos archivos distintos según el tipo de dato — un evento de `set`/`reset`
+no tiene valor de calibración (solo dice "abrí sesión" o "cambié estado"); una decisión
+clasificada sí lo tiene. Mezclarlos hacía la Calibración Fase 2 imposible de analizar.
+
+**`events.jsonl`** — automático, `set.sh`/`reset.sh` escriben aquí en cada llamada:
 
 ```json
 {"ts":"2026-07-06T22:44:32Z","gear":"G5","task":"arquitectura","effort":"high","action":"set","model":"Fable 5"}
 ```
 
-Para calibración manual: agregar `retrabajo: true` si la tarea tuvo que rehacerse
-(señal de marcha insuficiente). El análisis de `log.jsonl` alimenta la Calibración Fase 2.
+**`decisions.jsonl`** — el dato que calibra. Se escribe con el comando literal del paso 3
+del protocolo, SIEMPRE que se clasifique una tarea (haya o no cambio de marcha):
+
+```bash
+~/.claude/gearbox/log.sh decision <gear_actual> <gear_recomendada> "<task>" [skill] [doc]
+```
+
+Ejemplo real:
+
+```bash
+~/.claude/gearbox/log.sh decision G2 G2 "fix de bug en checkout" supabase
+```
+
+Esquema canónico que produce (una línea JSONL):
+
+```json
+{"ts":"...","model":"Sonnet 5","gear_actual":"G2","gear_recomendada":"G2",
+ "task":"fix de bug en checkout","skill":"supabase","accion":"ejecutar",
+ "doc":"","retrabajo":false}
+```
+
+`accion` se auto-deriva (`ejecutar` si `gear_actual`==`gear_recomendada`, si no
+`recomendar-cambio`) o se pasa explícito como 6º argumento — usar `delegar-haiku` cuando
+la tarea se delega a un subagente Haiku (G0), para que la delegación deje rastro:
+
+```bash
+~/.claude/gearbox/log.sh decision G2 G0 "buscar todas las referencias a X" "" "" delegar-haiku
+```
+
+**Retrabajo** — LA señal de marcha insuficiente. Si una tarea tuvo que rehacerse, registrar
+una línea nueva (JSONL es append-only, no se edita la anterior):
+
+```bash
+~/.claude/gearbox/log.sh retrabajo "<task>"
+```
+
+**Modelo:** ambos comandos registran el modelo si está disponible — vía `GEARBOX_MODEL`
+(variable de entorno) o como último argumento en modo evento
+(`set.sh <gear> [task] [effort] [model]`). Nunca se inventa: si no está disponible, el
+campo queda vacío.
+
+El historial previo a este esquema vive en `~/.claude/gearbox/log.jsonl.v1` (archivado,
+nunca borrado — 3 esquemas incompatibles convivían ahí; ver auditoría 2026-07-06).
+El análisis de `decisions.jsonl` alimenta la Calibración Fase 2.
 
 ---
 
 ## Calibración Fase 2 (semi-automática, gate humano)
 
-Cuando `log.jsonl` acumule ~2 semanas de datos:
-1. Analizar: qué skills corrieron en qué marcha y si hubo retrabajo
+Umbral mínimo utilizable: **≥10 decisiones por skill** en `decisions.jsonl` antes de proponer
+un frontmatter `effort:` — menos que eso no es evidencia, es ruido.
+
+Cuando un skill alcance el umbral:
+1. Analizar: en qué marcha corrió y si hubo `retrabajo:true`
 2. Proponer al usuario la tabla `skill → effort` para los frontmatter faltantes, CON evidencia
 3. Solo con su OK, editar el frontmatter `effort:` de cada skill
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Gearbox set.sh — establece marcha, tarea y esfuerzo en state.json
-# Uso: set.sh <gear> [task] [effort]
-#      set.sh G5 arquitectura high
+# Uso: set.sh <gear> [task] [effort] [model]
+#      set.sh G5 arquitectura high "Fable 5"
 #      set.sh G2 ejecución high
 #      set.sh auto
+# [model] también puede llegar por env var GEARBOX_MODEL, si no se pasa como argumento.
 
 GB_DIR="$HOME/.claude/gearbox"
 LOG_SH="$GB_DIR/log.sh"
@@ -42,6 +43,7 @@ default_task() {
 
 task="${2:-$(default_task "$gear")}"
 effort="${3:-high}"
+model="${4:-${GEARBOX_MODEL:-}}"
 
 # Crear directorio si no existe
 mkdir -p "$GB_DIR"
@@ -56,7 +58,7 @@ printf '⚙ Gearbox: %s · %s · %s\n' "$gear" "$task" "$effort"
 
 # Llamar a log.sh si existe (tolerante a errores)
 if [ -x "$LOG_SH" ]; then
-  "$LOG_SH" "set" "$gear" "$task" "$effort" 2>/dev/null || true
+  "$LOG_SH" "set" "$gear" "$task" "$effort" "$model" 2>/dev/null || true
 elif [ -f "$LOG_SH" ]; then
-  bash "$LOG_SH" "set" "$gear" "$task" "$effort" 2>/dev/null || true
+  bash "$LOG_SH" "set" "$gear" "$task" "$effort" "$model" 2>/dev/null || true
 fi

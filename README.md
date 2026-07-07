@@ -75,10 +75,11 @@ Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json
 | **G2 Ejecución** | features, UI, fixes | Sonnet · high | *default* | base |
 | **G3 Planeación** | PRPs, features grandes | **opusplan** | `/model opusplan` → 🤖 Opus planea, Sonnet ejecuta, cambia solo | Opus solo al planear |
 | **G3.5 Turno profundo** | 1 pregunta difícil | ultrathink | palabra `ultrathink` en el prompt | $0 de cambio |
-| **G4 Crítico** | seguridad, producción caída | Opus · high | `/model opus` | +40% que se paga solo |
-| **G5 Arquitectura** | ecosistema completo, infraestructura, decisiones multi-repo | **Fable 5** · max | `/model fable` o `claude --model fable` + gate de costo | 2× Opus |
+| **G4 Crítico** | seguridad, producción caída | Opus · high | `/model opus` · `/fast` para latencia baja | ≈1.7× Sonnet estándar, se paga solo |
+| **G5 Arquitectura** | ecosistema completo, infraestructura, decisiones multi-repo | **Fable 5** · high | `/model fable` o `claude --model fable` + gate de costo | 2× Opus |
 
 Precios de referencia (jul 2026, por millón de tokens in/out): Haiku $1/$5 · Sonnet $3/$15 estándar (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus $5/$25 · **Fable 5 $10/$50**.
+También existe el alias `best`: usa Fable si tu organización tiene acceso, si no el mejor Opus disponible. `/fast` activa el modo rápido de Opus (más velocidad de salida, mismo modelo) — útil en G4 cuando la latencia importa tanto como la calidad.
 
 ## 🎯 Qué significa `G5*` (el asterisco)
 
@@ -138,9 +139,26 @@ A partir de la **V2** el statusline muestra la marcha **derivada del modelo real
 | Fable | ≈5x |
 
 **Fuente final siempre: `/usage`** — el multiplicador es aproximado y no reemplaza la factura real.
-Si el payload de Claude Code trae un costo real de sesión (`cost_usd`), el statusline lo muestra como `~$X est.`
+Si el payload de Claude Code trae un costo real de sesión (`cost.total_cost_usd`), el statusline lo muestra como `~$X est.`
 
 Para actualizar precios: editar `~/.claude/gearbox/prices.json` (no se sobrescribe en reinstalaciones).
+
+## 📊 La barra de `/usage` — cuánto llevas quemado
+
+Desde Claude Code v2.1.80 el payload de statusline incluye `rate_limits.{five_hour,seven_day}.used_percentage` — el mismo dato que muestra `/usage`, sin API externa ni polling. El statusline la agrega después del multiplicador:
+
+```
+⚙ G2 · Sonnet 5 · high · ejecución · ≈1x · ▓▓▓░░ 61% 7d · 24% 5h
+```
+
+- **7d** (el recurso escaso en plan Pro): barra de 5 bloques `▓`/`░` + porcentaje.
+- **5h**: solo el número — cambia rápido, una barra ahí marearía más que ayudar.
+- Colores: <50% verde · 50–79% ámbar · ≥80% rojo.
+- Si tu plan no expone `rate_limits` (API, free, o el primer turno de la sesión), la sección
+  simplemente no aparece — cada ventana puede faltar por separado, Gearbox nunca inventa un número.
+- **La pieza gearbox-nativa:** si 7d≥80% y la marcha activa es G4 o G5, aparece un hint ámbar —
+  `⚠ 7d al NN% en marcha cara — considera bajar`. El `≈Nx` dice qué tan rápido quemas; la barra
+  dice cuánto llevas quemado; el hint conecta ambos con la decisión de marcha.
 
 ## 🧠 Cómo funciona
 
@@ -152,8 +170,9 @@ Tu prompt
    ├─ NO → trabaja directo, sin ruido
    └─ SÍ → 3. PAUSA + bloque ⚙ GEARBOX antes de gastar un token de más
    ↓
-4. BITÁCORA — cada decisión queda en ~/.claude/gearbox/log.jsonl
-   → con ~2 semanas de datos, Gearbox propone calibrar el esfuerzo de tus skills CON EVIDENCIA
+4. BITÁCORA — cada decisión queda en ~/.claude/gearbox/decisions.jsonl (separada de
+   events.jsonl, que solo registra cambios de estado sin valor de calibración)
+   → con ≥10 decisiones por skill, Gearbox propone calibrar su esfuerzo CON EVIDENCIA
 ```
 
 **Los 3 errores de dinero que ataca:**
@@ -202,9 +221,9 @@ Un adelanto de las que más pesan:
 
 ### Ventana Fable 5: úsalo con intención
 
-Anthropic anunció que Fable 5 está disponible globalmente desde el **2026-07-01** en Claude Platform, Claude.ai, Claude Code y Claude Cowork. Para Pro, Max, Team y algunos planes Enterprise, está incluido hasta **50% de los límites semanales hasta el 2026-07-07**; después se usa vía créditos de uso si tu plan los tiene habilitados. Fuente: [Redeploying Fable 5](https://www.anthropic.com/news/redeploying-fable-5).
+Anthropic anunció que Fable 5 está disponible globalmente desde el **2026-07-01** en Claude Platform, Claude.ai, Claude Code y Claude Cowork. Para Pro, Max, Team y algunos planes Enterprise, estuvo incluido hasta **50% de los límites semanales hasta el 2026-07-07**; esa ventana ya cerró — desde entonces se usa vía créditos de uso si tu plan los tiene habilitados. Fuente: [Redeploying Fable 5](https://www.anthropic.com/news/redeploying-fable-5).
 
-Eso no significa "úsalo para todo". Significa: si tienes acceso incluido, conviene gastarlo en decisiones que cambian la dirección del proyecto.
+Eso no significa "úsalo para todo". Significa: gastarlo en decisiones que cambian la dirección del proyecto, tengas o no acceso incluido.
 
 **Úsalo para:**
 - Blueprint de arquitectura de un producto o ecosistema completo
@@ -264,15 +283,15 @@ No. Gearbox es un proyecto open-source independiente de OpenGravity/Gabriel Marq
 
 <details><summary><b>¿Es seguro instalarlo con curl | bash?</b></summary>
 
-El instalador solo copia `SKILL.md`, `README.md`, `statusline.sh` y `reset.sh` a `~/.claude`, crea backup de `settings.json`, registra `statusLine` y agrega una directiva a `CLAUDE.md`. Aun así, si prefieres revisar antes de ejecutar, clona el repo y corre `bash install.sh` manualmente.
+El instalador copia 7 archivos a `~/.claude` (`SKILL.md`, `README.md`, `statusline.sh`, `reset.sh`, `set.sh`, `log.sh` y `prices.json`, este último solo si no existe ya uno), crea backup de `settings.json`, registra `statusLine` y agrega una directiva a `CLAUDE.md`. Aun así, si prefieres revisar antes de ejecutar, clona el repo y corre `bash install.sh` manualmente.
 </details>
 
-<details><summary><b>¿La ventana de Fable 5 hasta el 2026-07-07 significa uso gratis ilimitado?</b></summary>
+<details><summary><b>¿La ventana de Fable 5 hasta el 2026-07-07 significó uso gratis ilimitado?</b></summary>
 
-No. Anthropic anunció inclusión hasta 50% de límites semanales para Pro, Max, Team y algunos Enterprise hasta el 2026-07-07. No es ilimitado, puede depender del plan y después requiere usage credits si tu cuenta los tiene habilitados. Gearbox lo menciona como oportunidad temporal, no como promesa permanente.
+No, y esa ventana ya cerró. Anthropic anunció inclusión hasta 50% de límites semanales para Pro, Max, Team y algunos Enterprise hasta el 2026-07-07. No fue ilimitado, dependía del plan, y desde que cerró se usa vía usage credits si tu cuenta los tiene habilitados. Gearbox la mencionó como oportunidad temporal, nunca como promesa permanente.
 </details>
 
-<details><summary><b>¿Por qué no usar Fable 5 para todo mientras esté disponible?</b></summary>
+<details><summary><b>¿Por qué no usar Fable 5 para todo?</b></summary>
 
 Porque Fable 5 cuesta más, consume límites más rápido y su valor real está en decisiones difíciles: arquitectura, infraestructura, raíz de bugs complejos y contexto grande. Para implementación normal, Sonnet suele ser mejor equilibrio. Para rutina, Haiku o subagentes baratos son suficientes.
 </details>
@@ -329,7 +348,7 @@ Dos niveles: (1) versiones nuevas — Gearbox usa **alias** (`sonnet`, `opus`, `
 
 <details><summary><b>¿Cómo se calibra con mis datos?</b></summary>
 
-Cada clasificación se registra en `~/.claude/gearbox/log.jsonl`. Con ~2 semanas de uso, Gearbox propone niveles de esfuerzo por skill (frontmatter `effort:`) con la evidencia de cada una. Nada cambia sin tu OK.
+Cada clasificación se registra en `~/.claude/gearbox/decisions.jsonl` (con el comando `log.sh decision`, separado de `events.jsonl` que solo registra cambios de estado). Con ≥10 decisiones acumuladas para un skill, Gearbox propone su nivel de esfuerzo (frontmatter `effort:`) con la evidencia de cada una. Nada cambia sin tu OK.
 </details>
 
 <details><summary><b>¿Cómo desinstalo?</b></summary>
@@ -357,8 +376,12 @@ O a mano: `SKILL.md` → `~/.claude/skills/gearbox/` · `statusline.sh` y `reset
 ~/.claude/skills/gearbox/SKILL.md   ← el cerebro: tabla, protocolo, calibración, model watch
 ~/.claude/gearbox/statusline.sh     ← indicador azul (bash+sed puro)
 ~/.claude/gearbox/reset.sh          ← hook SessionStart → marcha default
+~/.claude/gearbox/set.sh            ← ancla una marcha (gear/task/effort/model)
+~/.claude/gearbox/log.sh            ← escribe la bitácora (events.jsonl / decisions.jsonl)
 ~/.claude/gearbox/state.json        ← marcha activa
-~/.claude/gearbox/log.jsonl         ← bitácora de calibración
+~/.claude/gearbox/events.jsonl      ← set/reset — sin valor de calibración
+~/.claude/gearbox/decisions.jsonl   ← bitácora de calibración (el dato que importa)
+~/.claude/gearbox/log.jsonl.v1      ← archivo histórico pre-v3 (no borrar)
 ```
 
 ## 🤝 Contribuir y dar retroalimentación
