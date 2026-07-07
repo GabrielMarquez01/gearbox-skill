@@ -382,6 +382,7 @@ O a mano: `SKILL.md` → `~/.claude/skills/gearbox/` · `statusline.sh` y `reset
 ~/.claude/gearbox/events.jsonl      ← set/reset — sin valor de calibración
 ~/.claude/gearbox/decisions.jsonl   ← bitácora de calibración (el dato que importa)
 ~/.claude/gearbox/log.jsonl.v1      ← archivo histórico pre-v3 (no borrar)
+~/.claude/gearbox/watch.json        ← fecha del último Model Watch (opcional, no lo toca reset.sh)
 ```
 
 ## 🤝 Contribuir y dar retroalimentación

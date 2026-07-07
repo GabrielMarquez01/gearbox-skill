@@ -259,7 +259,15 @@ Skills ya calibradas por naturaleza obvia (no requieren datos):
 
 ## Model Watch (revisión mensual)
 
-Una vez al mes (anotar fecha de última revisión en `~/.claude/gearbox/state.json` campo `last_watch`):
+La fecha de última revisión vive en `~/.claude/gearbox/watch.json` (`{"last_watch":"YYYY-MM-DD"}`)
+— un archivo propio que ningún `reset.sh` toca (a diferencia de `state.json`, que se reescribe
+completo en cada SessionStart). Si tu proyecto ya tiene un hook `SessionStart` propio (no lo
+instala `install.sh`; es infraestructura opcional que cada quien conecta a su gusto), puede leer
+este archivo y agregar un aviso pasivo al contexto (`⚙ Model Watch pendiente`) si pasaron más de
+30 días desde la última revisión, o si nunca se ha registrado una. Sin ese hook, revisar
+`watch.json` a mano una vez al mes cumple lo mismo.
+
+Cuando el aviso aparezca (o una vez al mes por iniciativa propia):
 1. Consultar https://platform.claude.com/docs/en/about-claude/models/overview
 2. Si hay modelo de categoría nueva (no solo versión — los alias cubren versiones):
 
@@ -271,6 +279,8 @@ Una vez al mes (anotar fecha de última revisión en `~/.claude/gearbox/state.js
 ```
 
 3. Solo con OK, actualizar la Tabla de Marchas de este archivo.
+4. Actualizar `~/.claude/gearbox/watch.json` con la fecha de hoy — haya o no modelo nuevo,
+   la revisión en sí misma resetea el conteo de 30 días.
 
 ---
 
