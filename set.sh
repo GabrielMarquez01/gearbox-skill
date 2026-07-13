@@ -48,10 +48,15 @@ model="${4:-${GEARBOX_MODEL:-}}"
 # Crear directorio si no existe
 mkdir -p "$GB_DIR"
 
-# Escribir state.json (sin jq, usando printf para seguridad)
+# Preservar el ultimo model conocido en state.json si esta llamada no trae uno nuevo
 clean() { printf '%s' "$1" | tr -d '"\\' ; }
+if [ -z "$model" ] && [ -f "$GB_DIR/state.json" ]; then
+  model=$(grep -o '"model":"[^"]*"' "$GB_DIR/state.json" 2>/dev/null | head -1 | sed 's/"model":"//;s/"$//')
+fi
+
+# Escribir state.json (sin jq, usando printf para seguridad)
 cat > "$GB_DIR/state.json" <<STATEOF
-{"gear":"$(clean "$gear")","task":"$(clean "$task")","effort":"$(clean "$effort")"}
+{"gear":"$(clean "$gear")","task":"$(clean "$task")","effort":"$(clean "$effort")","model":"$(clean "$model")"}
 STATEOF
 
 printf '⚙ Gearbox: %s · %s · %s\n' "$gear" "$task" "$effort"

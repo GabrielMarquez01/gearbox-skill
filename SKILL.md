@@ -232,8 +232,16 @@ una línea nueva (JSONL es append-only, no se edita la anterior):
 
 **Modelo:** ambos comandos registran el modelo si está disponible — vía `GEARBOX_MODEL`
 (variable de entorno) o como último argumento en modo evento
-(`set.sh <gear> [task] [effort] [model]`). Nunca se inventa: si no está disponible, el
-campo queda vacío.
+(`set.sh <gear> [task] [effort] [model]`). Si ninguno de los dos llega, `log.sh decision`
+cae al último `model` conocido en `state.json` (persistido ahí por `set.sh` desde 2026-07-13,
+fix GEARBOX-HIGIENE). Nunca se inventa: si tampoco hay dato en `state.json`, el campo queda
+vacío — no se adivina el modelo.
+
+**Skill:** `log.sh decision` valida el 4º campo contra los skills instalados en
+`~/.claude/skills/` (más un allowlist corto de skills globales de Claude Code sin carpeta
+local: `deep-research`, `security-review`, etc.) o el literal `ninguno`. Un valor vacío o
+que no matchea ninguno de los dos se normaliza a `ninguno` — evita que valores fragmentados
+(ej. `security` en vez de `security-review`) ensucien la Calibración Fase 2.
 
 El historial previo a este esquema vive en `~/.claude/gearbox/log.jsonl.v1` (archivado,
 nunca borrado — 3 esquemas incompatibles convivían ahí; ver auditoría 2026-07-06).
