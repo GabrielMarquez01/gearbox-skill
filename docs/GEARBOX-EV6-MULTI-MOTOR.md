@@ -275,6 +275,107 @@ Los cambios de titular deben proponerse con evidencia y ser aprobados por el ope
 
 ---
 
+### 2.7 Cómo el Gearbox elige el motor (y por qué)
+
+#### Coordinar es un rol, no un premio al modelo “más inteligente”
+
+En la implementación inicial, Claude ocupa el puesto de coordinador. No se eligió porque deba considerarse “el mejor modelo” ni porque tenga que resolver personalmente las tareas más difíciles.
+
+El coordinador necesita:
+
+- Mantener el contexto largo del negocio y del proyecto.
+- Aplicar la doctrina, los candados y las reglas del harness.
+- Convertir objetivos ambiguos en especificaciones ejecutables.
+- Asignar ejecutores, auditores y suplentes.
+- Mantener un único canal con el operador humano.
+
+Claude ocupa hoy ese puesto por su integración profunda con el harness: herramientas, tablero y memoria. Esa asignación no es permanente ni constituye una preferencia de marca. El puesto puede reasignarse al motor disponible que demuestre mejores resultados una vez que exista evidencia comparable.
+
+El coordinador no debe asumirse como el integrante más inteligente de la flota. Su trabajo es dirigir, conservar contexto y aplicar las reglas; no lucirse ni ejecutar por defecto todo el trabajo.
+
+#### Fortalezas y peculiaridades observadas hoy
+
+Las asignaciones iniciales reflejan lo observado durante el primer día de operación. Todavía no constituyen una clasificación definitiva: la calibración basada en suficientes ejecuciones comparables aún no ha ocurrido.
+
+##### Claude
+
+- Integración profunda con el harness, incluido el tablero y la memoria.
+- Buen ajuste inicial para conservar contexto y aplicar doctrina.
+- Juicio útil en decisiones de arquitectura y negocio.
+- Capacidad para coordinar tareas y mantener el canal humano.
+
+Su posición actual como coordinador describe un rol operativo, no una superioridad general frente a los demás motores.
+
+##### Codex — OpenAI
+
+- Precisión técnica útil para construcción y auditoría.
+- Aporta la perspectiva de otro proveedor, lo que ayuda a romper el sesgo cognitivo de depender de un solo proceso de entrenamiento.
+- Puede realizar búsqueda web dentro de su propio sandbox.
+- Su cupo puede leerse automáticamente mediante los eventos locales restringidos descritos en este documento.
+
+Su valor como auditor no consiste en garantizar que siempre tendrá razón. Consiste en ofrecer una revisión independiente, con herramientas y patrones de razonamiento distintos.
+
+##### Antigravity — Google/Gemini
+
+- Ventana de contexto grande.
+- Enjambre nativo de subagentes.
+- Rapidez percibida en las primeras pruebas interactivas (sin medición comparativa todavía).
+
+Su wrapper headless permanece en cuarentena porque todavía falta demostrar un candado técnico de seguridad suficiente. Puede utilizarse bajo supervisión directa, pero no debe entrar en automatizaciones o flujos desatendidos mientras continúe ese estado. Su cupo tampoco puede consultarse automáticamente mediante una vía oficial y debe registrarse de forma manual.
+
+Cada motor trae restricciones diferentes, además de capacidades distintas. Eso no es solamente una limitación: también permite defensa en profundidad. Si ninguna pieza recibe automáticamente todas las herramientas y todos los permisos, un fallo aislado tiene menos posibilidades de convertirse en una acción fuera de alcance.
+
+#### El selector: cómo se decide en la práctica
+
+El selector evalúa las tareas en este orden:
+
+1. **¿Está sujeto al candado perpetuo?**  
+   Si la tarea involucra dinero, asuntos legales, fiscalidad o datos personales, necesita un auditor de otro proveedor y aprobación humana. No hay excepción por costo, velocidad, confianza en el motor ni falta de cupo.
+
+2. **¿Existe una especificación escrita y suficiente?**  
+   Con objetivo, alcance, entradas y criterios de aceptación claros, cualquier constructor habilitado y disponible puede ejecutar la tarea. Sin una especificación clara, el trabajo permanece con el coordinador porque todavía requiere juicio, definición de alcance o conversación con el humano.
+
+3. **¿Qué herramientas necesita?**  
+   La tarea se asigna al motor que tenga las manos verificadas para realizarla. Una necesidad de contexto muy grande puede favorecer a Antigravity bajo supervisión y respetando su cuarentena. Una segunda opinión independiente puede favorecer a Codex. La capacidad de razonar no sustituye una herramienta ausente ni levanta una restricción de seguridad.
+
+4. **¿Hay cupo disponible?**  
+   Si el titular se satura, entra un suplente habilitado sin detener el flujo. La suplencia no hereda automáticamente todos los poderes del titular y solo debe continuar trabajos cuyo alcance esté suficientemente documentado.
+
+5. **¿Qué demuestra la evidencia?**  
+   La telemetría debe comparar aprobación inicial, retrabajo, rechazo, costo, duración, incidentes y resultados por clase de tarea. Con esos datos, la calibración puede reasignar puestos. Esa calibración todavía no ha corrido con una muestra suficiente, por lo que las asignaciones actuales son iniciales, no definitivas.
+
+#### Cómo sacar provecho de cada motor
+
+Dale a cada motor tareas acotadas, con entradas concretas y criterios verificables. Los tokens son un costo: desperdiciarlos en contexto innecesario o encargos ambiguos se parece a contratar más personal del necesario para un trabajo mal definido.
+
+Usa la auditoría cruzada cuando el costo de un error la justifique. Aplicarla indiscriminadamente a cada transformación trivial aumentaría consumo, duración y complejidad sin aportar un beneficio proporcional.
+
+Empieza en modo mono-motor. Añade otro motor solamente cuando exista un caso real, como una auditoría sensible, falta de cupo, necesidad de una herramienta específica o una frontera de seguridad que deba revisar otro proveedor.
+
+Mantén un solo canal con el humano. Los motores no coordinadores deben devolver resultados, hallazgos y bloqueos al coordinador; no deben presentar directamente nuevos planes al operador. Esta separación evita instrucciones contradictorias y conserva una sola fuente de contexto y autoridad.
+
+#### Regla de oro de la selección
+
+> La herramienta correcta para la tarea correcta, no la más nueva ni la más potente por defecto.
+
+Usar un modelo caro para razonar una tarea trivial es desperdicio. Usar un modelo barato o insuficientemente equipado para una decisión crítica es riesgo.
+
+El valor del selector no está en encontrar un ganador universal. Está en hacer el *match* entre el riesgo, la claridad de la especificación, las herramientas requeridas, el cupo disponible, el costo y la evidencia de desempeño.
+
+#### Candidatos futuros — no integrados todavía
+
+Los siguientes motores y herramientas son candidatos informados por la investigación, pero ninguno está integrado actualmente en Gearbox EV6:
+
+- **OpenCode:** agente open-source agnóstico de modelo y, según su propia documentación, compatible con más de 75 proveedores (cifra no verificada de forma independiente por este proyecto); podría funcionar como adaptador universal y reducir el trabajo necesario para enrolar nuevos motores.
+- **Qwen Code o modelos Qwen locales:** permitirían ejecución en una máquina propia con costo marginal verdaderamente cercano a cero e independencia de cupos externos; serían el seguro antiapagón si los proveedores remotos dejan de estar disponibles.
+- **Grok:** su operación headless nativa añadiría un cuarto proveedor y, con ello, más diversidad para auditorías cruzadas.
+- **Kimi o Mistral:** sus CLIs y modelos de pesos abiertos podrían aportar ejecutores económicos para trabajo de volumen bien especificado.
+- **Aider:** agente open-source veterano y nativo de Git; podría aportar un ejecutor especializado en flujos de desarrollo controlados por repositorio.
+
+Esta lista no equivale a soporte, recomendación de compra ni aprobación operativa. Para sumar cualquiera de estos candidatos debe cumplirse el contrato de enrolamiento de la sección 4.9: invocación probada en vivo, modos operativos verificados y costo confirmado. Hasta completar ese contrato —incluidas sus herramientas, restricciones y fronteras de seguridad— el candidato permanece fuera de la flota.
+
+---
+
 ## 3. No solo más cerebros: más manos
 
 El valor multi-vendor tiene dos capas complementarias.
