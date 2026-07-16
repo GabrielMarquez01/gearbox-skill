@@ -8,17 +8,21 @@
   <img src="./assets/gearbox-ev6-logo.png" alt="Logo Gearbox EV6" width="360">
 </p>
 
+**Versión 3 — 16 de julio de 2026**
+
 ## Executive summary
 
 Gearbox EV6 is an experimental multi-model orchestration system designed to reduce dependence on a single AI vendor.
 
-A coordinator assigns work to different AI engines—currently Claude, Codex, and Antigravity—according to task type, effort level, availability, and measured performance. Autonomous workflows require two distinct roles: an executor and an auditor. Sensitive work involving money, legal interpretation, taxes, or personal data requires cross-vendor review and human approval.
+A coordinator assigns work to different AI engines—currently Claude, Codex, and Antigravity—according to task type, effort level, availability, required tools, and measured performance. Autonomous workflows require two distinct roles: an executor and an auditor. Sensitive work involving money, legal interpretation, taxes, or personal data requires cross-vendor review and human approval.
 
-The system does not merge credentials or share authenticated sessions. Every operator installs each CLI separately and performs every login personally. Engines are enrolled only after their invocation, operating modes, limits, and cost model have been verified.
+The system does not merge credentials or share authenticated sessions. Every operator installs each CLI separately and performs every login personally. Engines are enrolled only after their invocation, operating modes, limits, cost model, tools, restrictions, and security boundaries have been verified.
 
-During its first operational day, a Codex cross-audit identified a relevant Mexican tax-rule omission—Miscellaneous Tax Rule 3.13.7—that the primary review had missed. This did not prove that one model was universally better. It demonstrated the practical value of independent review by a model from another vendor.
+During its first operational day, a Codex cross-audit identified a relevant Mexican tax-rule omission—Miscellaneous Tax Rule 3.13.7—that the primary review had missed. A later independent security audit found that the Antigravity headless wrapper appeared to resist write attempts, but relied on the model’s judgment instead of a hard technical permission boundary. That wrapper was quarantined from unattended workflows until its sandbox and command allow-list can be hardened and tested.
 
-Gearbox EV6 is early-stage infrastructure. Windows sandbox restrictions, headless authorization problems, quota visibility, and inconsistent CLI behavior remain real operational frictions. The goal of this document is to make those limitations reproducible and measurable, not to hide them.
+Codex quota visibility is now automated by reading only rate-limit numbers emitted by its own local session events. Codex reasoning effort is also explicitly raised for permanent-lock tasks involving money, legal matters, or taxes. Antigravity quota visibility remains manual because no official quota-query mechanism is available.
+
+Gearbox EV6 is early-stage infrastructure. Some frictions have been resolved; others remain operationally significant. The goal of this document is to make both the progress and the remaining limitations reproducible and measurable, not to hide them.
 
 ---
 
@@ -30,11 +34,12 @@ Usar un único modelo de IA para coordinar, ejecutar y revisar una tarea crea va
 - Si interpreta mal una instrucción, puede revisar su propio error sin detectarlo.
 - Si cambia el producto, sus precios o sus límites, toda la operación queda expuesta.
 - Si el mismo motor ejecuta y aprueba, la auditoría puede convertirse en una confirmación de su primera respuesta.
+- Ningún motor reúne necesariamente todas las herramientas, permisos y capacidades requeridas.
 - No existe evidencia comparable sobre qué motor funciona mejor para cada clase de trabajo.
 
-Gearbox EV6 trata los motores de IA como una flota con puestos, suplencias y medición de desempeño.
+Gearbox EV6 trata los motores de IA como una flota con puestos, suplencias, inventarios de capacidades y medición de desempeño.
 
-No busca una “IA perfecta”. Busca una operación que pueda continuar cuando un motor falla, se queda sin cupo o necesita una segunda opinión verdaderamente independiente.
+No busca una “IA perfecta”. Busca una operación que pueda continuar cuando un motor falla, se queda sin cupo, carece de una herramienta o necesita una segunda opinión verdaderamente independiente.
 
 Sus objetivos son:
 
@@ -42,8 +47,10 @@ Sus objetivos son:
 2. Separar ejecución y auditoría.
 3. Exigir revisión cruzada en decisiones sensibles.
 4. Mantener continuidad cuando un motor no está disponible.
-5. Medir resultados antes de reasignar responsabilidades.
-6. Conservar al humano como autoridad final en acciones irreversibles.
+5. Asignar trabajo por razonamiento y por herramientas requeridas.
+6. Medir resultados antes de reasignar responsabilidades.
+7. Conservar al humano como autoridad final en acciones irreversibles.
+8. Aplicar candados técnicos que no dependan de que el modelo decida portarse bien.
 
 ### Lo que Gearbox EV6 no es
 
@@ -52,6 +59,7 @@ Sus objetivos son:
 - No garantiza que dos modelos produzcan una respuesta correcta.
 - No permite que un auditor “autorice” por sí solo pagos, despliegues o decisiones legales.
 - No asigna puestos de manera permanente por preferencia de marca.
+- No considera la obediencia observada del modelo como una garantía de seguridad.
 - No es todavía una plataforma terminada: es un harness operativo en calibración.
 
 Un **harness** es la capa que prepara instrucciones, invoca motores, registra resultados y aplica controles alrededor de ellos.
@@ -76,7 +84,7 @@ Un motor es una implementación concreta, por ejemplo Claude, Codex o Antigravit
 
 El coordinador no debe asumirse como “el modelo más inteligente”. Su trabajo es conservar contexto, aplicar reglas y decidir quién atiende cada carril.
 
-En la implementación inicial, Claude ocupa la coordinación. Codex y Antigravity pueden actuar como ejecutores, auditores o suplentes según la tarea y la evidencia disponible.
+En la implementación inicial, Claude ocupa la coordinación. Codex puede actuar como ejecutor, auditor o suplente. Antigravity forma parte de la flota, pero su wrapper headless está en cuarentena: puede usarse bajo supervisión directa, no en flujos automáticos o desatendidos.
 
 ### 2.2 Sucesión meritocrática
 
@@ -86,10 +94,12 @@ Cada puesto puede tener:
 - Uno o más suplentes.
 - Restricciones de autoridad.
 - Evidencia histórica de desempeño.
+- Un inventario de herramientas y permisos verificados.
+- Un estado operativo, incluida una posible cuarentena.
 
 La sucesión no significa que el suplente herede todos los poderes del titular.
 
-Si el coordinador principal se queda sin cupo, el modo guardia puede pasar primero a Codex y después a Antigravity. La guardia queda limitada a:
+Si el coordinador principal se queda sin cupo, el modo guardia puede pasar a un motor habilitado. La guardia queda limitada a:
 
 - Continuar trabajos que ya tengan una especificación escrita.
 - Mantener carriles previamente autorizados.
@@ -104,8 +114,9 @@ La guardia no puede, por defecto:
 - Cerrar decisiones legales o fiscales.
 - Modificar datos sensibles.
 - Ampliar el alcance original.
+- Utilizar un wrapper en cuarentena dentro de un flujo desatendido.
 
-La sucesión se vuelve meritocrática cuando los puestos se revisan usando resultados observados: aprobación inicial, retrabajo, rechazo, costo y desempeño por clase de tarea.
+La sucesión se vuelve meritocrática cuando los puestos se revisan usando resultados observados: aprobación inicial, retrabajo, rechazo, costo, incidentes y desempeño por clase de tarea.
 
 ### 2.3 Pareja obligatoria: ejecutor + auditor
 
@@ -118,12 +129,12 @@ Especificación
      ↓
   Auditor
      ↓
-¿Cumple criterios?
-  ├─ No → retrabajo
+¿Cumple criterios y candados?
+  ├─ No → retrabajo o cuarentena
   └─ Sí → entrega o ventanilla humana
 ```
 
-El auditor no debe limitarse a corregir estilo. Debe intentar refutar el resultado:
+El auditor no debe limitarse a corregir estilo. Debe intentar refutar el resultado y revisar el entorno que lo produjo:
 
 - ¿Falta un requisito?
 - ¿Se inventó una fuente?
@@ -131,6 +142,8 @@ El auditor no debe limitarse a corregir estilo. Debe intentar refutar el resulta
 - ¿Se modificó algo fuera del alcance?
 - ¿La evidencia realmente sostiene la conclusión?
 - ¿Existe un riesgo que el ejecutor minimizó?
+- ¿El sandbox bloqueó la acción o el modelo decidió no ejecutarla?
+- ¿Un comando permitido puede evadir la intención del allow-list mediante otros parámetros?
 
 Para tareas sensibles se exige un auditor de otro proveedor.
 
@@ -143,16 +156,19 @@ Ejemplos:
 | Análisis fiscal | Motor primario | Motor de otro proveedor + humano |
 | Pago o despliegue | Motor preparador | Auditor cruzado + aprobación humana |
 | Tratamiento de datos personales | Motor restringido | Auditor cruzado + revisión humana |
+| Wrapper de permisos | Motor constructor | Auditor independiente con enfoque adversarial |
 
 La diversidad de proveedor no garantiza independencia perfecta, pero reduce la posibilidad de repetir exactamente el mismo patrón de razonamiento.
 
 ### 2.4 Gearbox: dos ejes, no una sola escala
 
-Cada tarea se clasifica en dos dimensiones:
+Cada tarea se clasifica inicialmente en dos dimensiones:
 
 ```text
 Tarea = marcha de esfuerzo × motor asignado
 ```
+
+La selección operativa también considera una tercera condición: las herramientas y los permisos requeridos.
 
 #### Eje 1: marcha G0–G5
 
@@ -176,15 +192,16 @@ El motor se elige según:
 1. Candados de riesgo.
 2. Existencia de una especificación escrita.
 3. Disponibilidad y cupo.
-4. Capacidades verificadas.
-5. Historial de desempeño.
-6. Costo confirmado.
+4. Capacidades y herramientas verificadas.
+5. Restricciones y estado de cuarentena.
+6. Historial de desempeño.
+7. Costo confirmado.
 
 Ejemplos:
 
 ```text
 Construir una función con criterios claros
-= G2 × motor constructor disponible
+= G2 × motor constructor habilitado y disponible
 
 Auditar una interpretación fiscal
 = G4 × motor primario + G4 × auditor de otro proveedor
@@ -192,7 +209,31 @@ Auditar una interpretación fiscal
 
 Para dinero, asuntos legales, fiscalidad o datos personales, la eficiencia nunca elimina la revisión cruzada ni la aprobación humana.
 
-### 2.5 Telemetría y calibración
+### 2.5 Esfuerzo de razonamiento configurable en Codex
+
+La configuración oficial de Codex define `model_reasoning_effort` con los niveles:
+
+```text
+minimal | low | medium | high | xhigh
+```
+
+Puede fijarse por invocación, por ejemplo:
+
+```bash
+codex exec -c model_reasoning_effort="high"
+```
+
+El wrapper del auditor cruzado ahora fija el esfuerzo en `high` para tareas sujetas al candado perpetuo:
+
+- Dinero.
+- Legal.
+- Fiscal.
+
+Antes, estas auditorías se ejecutaban con el valor predeterminado bajo. La corrección no garantiza una respuesta acertada, pero asigna deliberadamente más razonamiento cuando el costo de un error supera el costo de pensar más.
+
+La fuente de configuración debe comprobarse en la [referencia oficial de configuración de Codex](https://developers.openai.com/codex/config-reference).
+
+### 2.6 Telemetría y calibración
 
 Cada ejecución debería registrar, como mínimo:
 
@@ -203,6 +244,7 @@ Cada ejecución debería registrar, como mínimo:
   "marcha": "G4",
   "motor": "codex",
   "rol": "auditor",
+  "esfuerzo_razonamiento": "high",
   "resultado": "aprobado_primera",
   "costo_estimado": null,
   "duracion_segundos": 0,
@@ -216,12 +258,16 @@ Los valores concretos pueden variar, pero conviene conservar:
 - Rol desempeñado.
 - Tipo de tarea.
 - Marcha asignada.
+- Esfuerzo de razonamiento, cuando sea configurable.
 - Resultado.
 - Número de retrabajos.
 - Duración.
 - Costo estimado o estado “desconocido”.
 - Motivo de rechazo.
 - Incidentes de permisos, sandbox o autenticación.
+- Herramientas utilizadas.
+- Estado de cupo y antigüedad de la lectura.
+- Estado operativo del wrapper: aprobado, supervisado o en cuarentena.
 
 La calibración no debería hacerse con impresiones aisladas. Una primera revisión puede realizarse tras reunir aproximadamente dos semanas de datos; después puede repetirse mensualmente.
 
@@ -229,9 +275,58 @@ Los cambios de titular deben proponerse con evidencia y ser aprobados por el ope
 
 ---
 
-## 3. Guía de replicación
+## 3. No solo más cerebros: más manos
 
-### 3.1 Requisitos básicos
+El valor multi-vendor tiene dos capas complementarias.
+
+### 3.1 Más cerebros
+
+Cada proveedor aporta modelos entrenados bajo procesos diferentes. Esa diversidad permite obtener juicio independiente y aplicar auditoría cruzada.
+
+La meta no es votar por mayoría. Es aumentar la probabilidad de que un auditor cuestione supuestos, detecte omisiones o reconozca riesgos que el ejecutor no vio.
+
+### 3.2 Más manos
+
+Cada motor también trae herramientas, integraciones, permisos y restricciones diferentes.
+
+Ejemplos observados durante el primer día:
+
+- Codex ejecutó búsqueda web dentro de su propio sandbox durante una auditoría.
+- Antigravity aporta un enjambre nativo de subagentes y una ventana de contexto grande.
+- Claude aporta el harness completo: integraciones, tablero y memoria.
+
+Las restricciones también pueden ser complementarias. Una herramienta bloqueada para un motor puede estar disponible para otro bajo sus propios candados.
+
+Esto produce dos efectos simultáneos:
+
+1. **Unión de capacidades:** el equipo puede resolver tareas que ningún motor aislado cubre por completo.
+2. **Defensa en profundidad:** ninguna pieza recibe automáticamente todas las herramientas y todos los permisos.
+
+Ningún motor tiene todas las llaves; el equipo sí puede reunir las necesarias mediante asignaciones explícitas, separación de funciones y aprobación humana.
+
+El corolario operativo es que enrolar un motor exige documentar no solo su costo, sino también su inventario de manos:
+
+```yaml
+manos:
+  herramientas_verificadas:
+    - "<herramienta disponible>"
+  integraciones:
+    - "<integracion disponible>"
+  acciones_restringidas:
+    - "<accion bloqueada>"
+  permisos_requeridos:
+    - "<permiso necesario>"
+  sandbox:
+    estado: "probado | parcial | no probado"
+```
+
+Así, una tarea se asigna tanto por el juicio requerido como por la herramienta necesaria y los candados disponibles.
+
+---
+
+## 4. Guía de replicación
+
+### 4.1 Requisitos básicos
 
 Necesitarás:
 
@@ -248,17 +343,17 @@ Necesitarás:
 
 Los nombres de productos, comandos de instalación, planes y límites pueden cambiar. Verifica siempre la documentación oficial de cada proveedor antes de automatizar el flujo.
 
-### 3.2 Estructura genérica sugerida
+### 4.2 Estructura genérica sugerida
 
 ```text
-~/proyecto/
+proyecto/
 ├── AGENTS.md
 ├── specs/
 │   └── tarea-001.md
 ├── wrappers/
 │   ├── claude-runner.*
 │   ├── codex-runner.*
-│   └── antigravity-runner.*
+│   └── agy-runner.*
 ├── gearbox/
 │   ├── puestos.json
 │   ├── motores.json
@@ -272,9 +367,9 @@ Los nombres de productos, comandos de instalación, planes y límites pueden cam
         └── auditoria.md
 ```
 
-No copies rutas locales, tokens, cookies ni archivos de sesión dentro del repositorio.
+No copies rutas privadas, tokens, cookies ni archivos de sesión dentro del repositorio.
 
-### 3.3 Autenticación: regla humana obligatoria
+### 4.3 Autenticación: regla humana obligatoria
 
 Cada CLI debe autenticarse por separado mediante el procedimiento oficial del proveedor.
 
@@ -300,7 +395,7 @@ Nunca se debe:
 
 **Headless** significa ejecutar una herramienta sin una interfaz gráfica o navegador interactivo disponible.
 
-### 3.4 Claude Code
+### 4.4 Claude Code
 
 Proceso general:
 
@@ -320,7 +415,7 @@ Antes de usarlo como coordinador, comprueba que pueda:
 - Invocar o preparar trabajo para otros motores.
 - Detectar cuándo debe detenerse ante una ventanilla humana.
 
-### 3.5 Codex CLI
+### 4.5 Codex CLI
 
 Proceso general:
 
@@ -331,6 +426,8 @@ Proceso general:
 5. Ejecuta una prueba de solo lectura.
 6. Prueba explícitamente el modo de sandbox que utilizarás.
 7. Registra el comando probado y sus restricciones.
+8. Comprueba que el wrapper de cuota solo extraiga los campos numéricos autorizados.
+9. Fija explícitamente el esfuerzo de razonamiento para tareas sensibles.
 
 En Windows, valida especialmente:
 
@@ -343,7 +440,41 @@ En Windows, valida especialmente:
 
 Una invocación correcta en modo interactivo no demuestra que el mismo wrapper funcionará en un proceso automatizado.
 
-### 3.6 Antigravity CLI
+### 4.6 Lectura automática del cupo de Codex
+
+Codex CLI no ofrece un comando oficial headless dedicado a consultar la cuota. Sin embargo, el propio CLI escribe eventos `rate_limits` en archivos locales de sesión con campos como:
+
+- `used_percent`
+- `window_minutes`
+- `resets_at`
+
+El wrapper consulta los archivos locales con el patrón genérico:
+
+```text
+~/.codex/sessions/*/rollout-*.jsonl
+```
+
+El parser extrae únicamente los números necesarios para calcular el estado de cupo. Nunca lee, procesa, registra ni transmite el contenido de las conversaciones de sesión.
+
+Con esos valores, el estado de flota se actualiza automáticamente. El motor deja de aparecer simplemente como `activo` y pasa a un estado informativo como:
+
+```text
+disponible / 42% de la ventana usado
+```
+
+Umbrales operativos:
+
+| Uso de ventana | Estado |
+|---|---|
+| Menos de 75% | Disponible |
+| 75% o más | Bajo |
+| 100% o más | Agotado |
+
+Esta solución resuelve la fricción de visibilidad de cuota para Codex, aunque depende del formato de eventos que escribe el CLI y debe probarse al actualizarlo.
+
+La fuente oficial para la configuración de Codex es la [referencia de configuración de OpenAI](https://developers.openai.com/codex/config-reference). No existe aquí una afirmación de que el parser sea una API oficial de cuota: es una lectura local y restringida de eventos generados por el CLI.
+
+### 4.7 Antigravity CLI
 
 Proceso general:
 
@@ -352,21 +483,57 @@ Proceso general:
 3. Completa personalmente el login con tu cuenta de Google.
 4. Revisa los permisos solicitados.
 5. Prueba una tarea mínima en sesión interactiva.
-6. Repite la prueba en el entorno headless previsto.
-7. Registra las diferencias entre ambos modos.
+6. Registra las diferencias entre los modos interactivo y headless.
+7. No habilites el wrapper headless en automatización mientras permanezca en cuarentena.
 
-La fricción más importante encontrada durante el enrolamiento inicial fue la autorización headless. Un motor puede estar correctamente instalado y funcionar en una terminal humana, pero fallar cuando:
+Antigravity no dispone de una vía oficial para consultar automáticamente su cuota; existe un issue abierto en su repositorio. Por tanto, su porcentaje de uso continúa siendo manual.
 
-- No existe navegador disponible.
-- El proceso no puede abrir la URL de autorización.
-- La sesión expira.
-- El entorno aislado no puede leer la sesión local.
-- El CLI requiere una confirmación interactiva.
-- Los permisos de la cuenta no coinciden con los esperados.
+No debe simularse precisión inexistente. Hasta que haya una vía oficial y probada, su estado debe registrar algo equivalente a:
 
-No resuelvas estas diferencias copiando sesiones. Trátalas como una restricción operativa y conserva un procedimiento humano de renovación.
+```text
+cupo: manual
+ultima_confirmacion: "<fecha o desconocido>"
+```
 
-### 3.7 Contrato mínimo para enrolar un motor
+### 4.8 Hallazgo de seguridad: `agy-runner` en cuarentena
+
+Al construir el wrapper headless de Antigravity, un auditor independiente probó su barrera de solo lectura.
+
+El wrapper resistió cuatro intentos de escritura. Sin embargo, el análisis posterior encontró un problema crítico: la barrera efectiva había sido el juicio del propio modelo, no un candado técnico duro impuesto por el motor de permisos.
+
+La lista de comandos supuestamente de solo lectura incluía herramientas como:
+
+- `find`
+- `rg`
+- `git log`
+- `git diff`
+- `git show`
+
+Estas herramientas normalmente se utilizan para inspección, pero ciertos parámetros pueden producir escrituras o ejecutar otros procesos. Entre los ejemplos relevantes están `-exec`, `--pre` y `--output`, una familia de desvíos conocida en catálogos como GTFOBins.
+
+Por tanto, observar que el modelo rechazó cuatro escrituras no demostró que el entorno fuera seguro. Solo demostró que ese modelo, bajo esas pruebas, decidió no aprovechar las rutas disponibles.
+
+La decisión operativa fue inmediata:
+
+> `agy-runner` queda en cuarentena. Puede utilizarse únicamente bajo supervisión directa y está prohibido en flujos automáticos o desatendidos.
+
+La cuarentena continuará hasta cerrar tres correcciones:
+
+1. Activar el sandbox real del binario.
+2. Acotar los comandos y parámetros del allow-list.
+3. Probar en vivo que el motor de permisos —no el modelo— bloquea las escrituras.
+
+**Allow-list** significa una lista explícita de acciones permitidas. Autorizar solo el nombre de un comando no basta si algunos de sus parámetros cambian radicalmente lo que puede hacer.
+
+El wrapper de Codex no fue afectado por este hallazgo: quedó aprobado y operativo bajo sus propios controles.
+
+La lección central es aplicable a cualquier sistema multi-agente:
+
+> “El modelo se portó bien” no es una garantía de seguridad. Los candados deben ser estructurales, verificables y externos al juicio del modelo.
+
+La pareja ejecutor + auditor adquiere aquí un segundo valor. Un auditor independiente y con otro enfoque no solo revisa respuestas: también puede descubrir que una protección aparente depende de cooperación voluntaria y no de una frontera técnica real.
+
+### 4.9 Contrato mínimo para enrolar un motor
 
 Un motor no debe entrar en la flota solo porque está instalado.
 
@@ -375,6 +542,7 @@ Como mínimo, registra:
 ```yaml
 nombre: codex
 proveedor: openai
+estado_operativo: aprobado
 
 invocacion_probada:
   comando: "<comando verificado localmente>"
@@ -384,7 +552,7 @@ invocacion_probada:
 
 modos:
   interactivo: true
-  headless: false
+  headless: true
   solo_lectura: true
   escritura_controlada: false
   salida_estructurada: true
@@ -400,8 +568,22 @@ costo:
   fuente: "<documentacion oficial consultada>"
 
 limites:
-  cupo_visible: false
-  comportamiento_al_agotarse: "desconocido"
+  cupo_visible: true
+  metodo: "eventos locales restringidos | manual | oficial | desconocido"
+  contenido_de_sesion_leido: false
+  comportamiento_al_agotarse: "<verificado o desconocido>"
+
+razonamiento:
+  configurable: true
+  nivel_para_tareas_sensibles: "high"
+
+manos:
+  herramientas_verificadas:
+    - "<herramienta>"
+  restricciones:
+    - "<restriccion>"
+  permisos_requeridos:
+    - "<permiso>"
 
 roles_autorizados:
   - ejecutor
@@ -414,20 +596,24 @@ roles_restringidos:
 
 sandbox:
   probado: true
+  bloqueo_tecnico_verificado: true
   observaciones:
     - "<restriccion encontrada>"
 ```
 
-Los cuatro campos indispensables son:
+Los campos indispensables son:
 
 1. Nombre inequívoco del motor.
 2. Invocación realmente probada.
 3. Modos operativos confirmados.
 4. Costo confirmado o marcado explícitamente como desconocido.
+5. Inventario de herramientas y restricciones.
+6. Estado de sandbox y cuarentena.
+7. Método real de visibilidad de cuota.
 
-“Parece gratuito” no equivale a costo confirmado.
+“Parece gratuito” no equivale a costo confirmado. “No escribió” tampoco equivale a escritura técnicamente bloqueada.
 
-### 3.8 Especificación mínima de una tarea
+### 4.10 Especificación mínima de una tarea
 
 Para que un suplente pueda continuar sin reinterpretar todo el proyecto, cada tarea debería incluir:
 
@@ -453,6 +639,9 @@ Documentos y datos necesarios.
 ## Riesgo
 G0–G5 y justificación.
 
+## Herramientas requeridas
+Capacidades necesarias para ejecutar la tarea.
+
 ## Autoridad
 Qué puede ejecutar el motor y qué necesita aprobación humana.
 
@@ -462,27 +651,29 @@ Quién revisará y si debe pertenecer a otro proveedor.
 
 Sin una especificación suficiente, el modo guardia no debería improvisar trabajo sensible.
 
-### 3.9 Flujo mínimo reproducible
+### 4.11 Flujo mínimo reproducible
 
 1. El humano crea una tarea pequeña y reversible.
 2. El coordinador asigna marcha y clase.
-3. El selector elige ejecutor.
-4. El ejecutor produce un artefacto.
-5. Otro motor actúa como auditor.
-6. El coordinador compara el resultado con los criterios.
-7. La bitácora registra aprobación, retrabajo o rechazo.
-8. El humano aprueba cualquier acción irreversible.
-9. Tras varias ejecuciones, se comparan resultados por clase de tarea.
+3. El selector identifica las herramientas requeridas.
+4. Se excluyen motores agotados, restringidos o en cuarentena.
+5. El ejecutor produce un artefacto.
+6. Otro motor actúa como auditor.
+7. El auditor revisa resultado y candados.
+8. El coordinador compara la salida con los criterios.
+9. La bitácora registra aprobación, retrabajo, rechazo o cuarentena.
+10. El humano aprueba cualquier acción irreversible.
+11. Tras varias ejecuciones, se comparan resultados por clase de tarea.
 
 Empieza con documentación o código desechable. No utilices como primera prueba un pago, un despliegue de producción ni una interpretación legal real.
 
-### 3.10 Apéndice: comandos verificados
+### 4.12 Apéndice: comandos verificados
 
-Los siguientes comandos fueron probados entre el 15 y el 16 de julio de 2026:
+Los siguientes comandos fueron probados entre el 15 y el 16 de julio de 2026.
 
 #### Instalación de Antigravity CLI
 
-Verificado el 2026-07-15/16 mediante el instalador oficial de Google:
+Verificada mediante el instalador oficial de Google:
 
 ```bash
 curl -fsSL https://antigravity.google/cli/install.sh | bash
@@ -490,29 +681,35 @@ curl -fsSL https://antigravity.google/cli/install.sh | bash
 
 #### Invocación headless de Codex
 
-Verificada el 2026-07-15/16 en modo de solo lectura:
+Verificada en modo de solo lectura:
 
 ```bash
 codex exec --sandbox read-only
+```
+
+Para tareas de candado perpetuo, el wrapper del auditor fija:
+
+```bash
+codex exec --sandbox read-only -c model_reasoning_effort="high"
 ```
 
 Cuando Codex se ejecuta desde WSL sobre Windows, la fricción del sandbox de Windows puede requerir un wrapper de PowerShell para realizar la invocación en el entorno adecuado.
 
 #### Prueba headless de Antigravity
 
-Probada el 2026-07-15/16:
+Probada inicialmente con:
 
 ```bash
 agy --sandbox --print "prompt"
 ```
 
-Esta invocación requiere reglas de autorización de permisos —*allow-rules*— para operar correctamente en modo headless. Su configuración completa es una limitación conocida todavía pendiente.
+Esta prueba no constituye aprobación para automatización. El wrapper asociado permanece en cuarentena hasta verificar que el sandbox real y el motor de permisos bloqueen técnicamente cualquier escritura no autorizada.
 
 > Los comandos, instaladores y opciones de CLI envejecen. Verifica siempre la sintaxis y el procedimiento vigente contra la documentación oficial de cada proveedor.
 
 ---
 
-## 4. Modo mono-motor (empezar solo con Claude Code)
+## 5. Modo mono-motor (empezar solo con Claude Code)
 
 Gearbox puede adoptarse por capas. No es necesario instalar tres sistemas ni construir desde el primer día una flota multi-motor.
 
@@ -543,12 +740,14 @@ Los casos reales que justifican sumar un segundo motor incluyen:
 
 - Auditoría cruzada de contenido sensible.
 - Continuidad operativa cuando el motor principal se queda sin cupo.
+- Acceso controlado a herramientas que el primer motor no posee.
+- Auditoría independiente de permisos y fronteras de seguridad.
 
 Multi-motor es una evolución opcional, no un requisito de entrada.
 
 ---
 
-## 5. El primer día: una omisión fiscal detectada por auditoría cruzada
+## 6. El primer día: una omisión fiscal detectada por auditoría cruzada
 
 Durante la primera jornada operativa, entre el 15 y el 16 de julio de 2026, el sistema fue probado con una revisión que incluía contenido fiscal mexicano.
 
@@ -591,11 +790,47 @@ La conclusión operativa fue conservar como candado permanente:
 
 > Toda tarea relacionada con dinero, fiscalidad, asuntos legales o datos personales necesita auditoría cruzada entre proveedores y decisión humana final.
 
+Para las auditorías realizadas con Codex en dinero, legal o fiscal, el wrapper ahora fija además `model_reasoning_effort="high"`.
+
 ---
 
-## 6. Fricciones reales encontradas
+## 7. Segundo hallazgo del primer día: la seguridad aparente no era un candado
 
-### 6.1 Sandbox de Windows
+El hallazgo fiscal demostró el valor de más cerebros. La auditoría del wrapper de Antigravity demostró el valor de un auditor que también examine las manos y sus límites.
+
+Cuatro intentos de escritura fueron resistidos durante las pruebas. A primera vista, eso parecía validar el modo de solo lectura.
+
+La revisión independiente encontró que varios comandos permitidos admitían parámetros capaces de escribir o ejecutar acciones adicionales. La protección observada había dependido de que el modelo no utilizara esas rutas.
+
+El sistema respondió colocando `agy-runner` en cuarentena, en lugar de interpretar el comportamiento correcto del modelo como evidencia suficiente.
+
+El patrón de autoprotección fue:
+
+```text
+Wrapper aparentemente de solo lectura
+        ↓
+Pruebas de escritura rechazadas por el modelo
+        ↓
+Auditor independiente inspecciona la frontera técnica
+        ↓
+Descubre parámetros con capacidad de evasión
+        ↓
+No existe prueba de bloqueo estructural
+        ↓
+Cuarentena inmediata
+        ↓
+Sandbox real + allow-list acotado + prueba viva
+```
+
+Este incidente no demuestra que Antigravity intentara violar permisos. Demuestra que el wrapper no podía garantizar técnicamente que una ejecución futura estuviera contenida.
+
+El sistema se autoprotegió porque la auditoría no se detuvo en “funcionó cuatro veces”. Preguntó qué componente había impuesto realmente el límite.
+
+---
+
+## 8. Fricciones reales encontradas
+
+### 8.1 Sandbox de Windows
 
 La automatización en Windows presentó restricciones que no aparecían en pruebas manuales:
 
@@ -607,31 +842,50 @@ La automatización en Windows presentó restricciones que no aparecían en prueb
 
 Lección: prueba cada wrapper en el mismo modo de sandbox, usuario y directorio que utilizará el flujo real.
 
-### 6.2 Autorización headless
+### 8.2 Autorización headless
 
 Antigravity mostró fricción al trasladar una sesión autenticada manualmente a un flujo sin interfaz.
 
 Lección: “login correcto” y “automatización headless correcta” son dos criterios de aceptación distintos.
 
-### 6.3 Costos y cupos imperfectamente visibles
+### 8.3 Visibilidad de cupo: resuelta para Codex, pendiente para Antigravity
+
+La visibilidad automática de cuota de Codex quedó resuelta mediante la lectura restringida de eventos locales `rate_limits`. El parser usa los valores numéricos de uso y ventana, sin inspeccionar contenido de sesiones.
+
+Antigravity no ofrece una vía oficial equivalente. Su porcentaje sigue siendo manual.
+
+Lección: no generalices una integración local de un proveedor como si fuera una capacidad universal de la flota.
+
+### 8.4 `agy-runner` permanece en cuarentena
+
+El wrapper headless de Antigravity no está autorizado para automatización o ejecución desatendida.
+
+Pendientes reales:
+
+1. Activar el sandbox real del binario.
+2. Restringir comandos y parámetros del allow-list.
+3. Demostrar mediante una prueba en vivo que el motor de permisos bloquea la escritura.
+
+Lección: una salida correcta no prueba que el control técnico sea correcto.
+
+### 8.5 Costos todavía imperfectamente visibles
 
 No todos los motores exponen de la misma manera:
 
-- Consumo actual.
-- Cupo restante.
-- Ventana de renovación.
 - Costo marginal.
+- Relación entre suscripción y consumo.
 - Motivo exacto de una limitación.
+- Consumo atribuible a una tarea individual.
 
 Lección: usa `desconocido` como valor válido. No inventes precisión.
 
-### 6.4 Comparaciones todavía inmaduras
+### 8.6 Comparaciones todavía inmaduras
 
-Una sola auditoría exitosa no basta para reasignar todos los puestos. También deben medirse falsos positivos, retrabajo, costo, duración y desempeño por tipo de tarea.
+Una auditoría fiscal exitosa y un hallazgo de seguridad relevante no bastan para reasignar todos los puestos. También deben medirse falsos positivos, retrabajo, costo, duración e incidentes por tipo de tarea.
 
 Lección: la meritocracia necesita datos comparables, no anécdotas favorables.
 
-### 6.5 Coordinación como posible punto único de fallo
+### 8.7 Coordinación como posible punto único de fallo
 
 Aunque existan varios motores, un único coordinador puede seguir concentrando contexto y autoridad.
 
@@ -639,7 +893,7 @@ Lección: documenta el modo guardia, limita sus poderes y conserva especificacio
 
 ---
 
-## 7. Este documento fue escrito en equipo multi-motor
+## 9. Este documento fue escrito en equipo multi-motor
 
 Este documento también forma parte del experimento de transparencia de Gearbox EV6.
 
@@ -648,7 +902,7 @@ Este documento también forma parte del experimento de transparencia de Gearbox 
 - **Tercer motor enrolado en la flota:** Antigravity.
 - **Autoridad final sobre publicación y cambios:** el operador humano.
 
-Antigravity no se presenta como coautor de secciones que no redactó. Su participación declarada es la de tercer motor enrolado dentro de la arquitectura descrita.
+Antigravity no se presenta como coautor de secciones que no redactó. Su participación declarada es la de tercer motor enrolado dentro de la arquitectura descrita. Su wrapper headless permanece en cuarentena y esa restricción forma parte del estado publicado del sistema.
 
 Esta atribución importa porque una documentación multi-motor debería indicar:
 
@@ -657,12 +911,13 @@ Esta atribución importa porque una documentación multi-motor debería indicar:
 - Qué fuente proporcionó el contexto.
 - Qué decisiones tomó el humano.
 - Qué partes no fueron verificadas de forma independiente.
+- Qué wrappers estaban aprobados, restringidos o en cuarentena.
 
 La transparencia de procedencia no garantiza calidad, pero permite evaluar y reproducir el proceso.
 
 ---
 
-## 8. Cómo evaluar tu propia réplica
+## 10. Cómo evaluar tu propia réplica
 
 Durante las primeras pruebas, registra al menos:
 
@@ -677,19 +932,22 @@ Durante las primeras pruebas, registra al menos:
 | Costo estimado | ¿Cuánto cuesta cada clase de tarea? |
 | Continuidad | ¿El suplente pudo continuar cuando faltó el titular? |
 | Incidentes de permisos | ¿Cuántas ejecuciones fallaron por el entorno? |
+| Evasiones detectadas | ¿Algún comando permitido podía romper el candado? |
 | Intervenciones humanas | ¿Dónde fue necesario detener la autonomía? |
+| Estado de cuota | ¿La lectura es automática, manual o desconocida? |
+| Cobertura de herramientas | ¿El motor tenía las manos necesarias? |
 
 No compares motores mezclando tareas diferentes. Un motor puede rendir bien construyendo con especificaciones y mal resolviendo ambigüedad, o viceversa.
 
 Una comparación útil agrupa resultados por:
 
 ```text
-clase de tarea + marcha + rol + entorno
+clase de tarea + marcha + rol + entorno + herramientas + estado del wrapper
 ```
 
 ---
 
-## 9. Controles recomendados
+## 11. Controles recomendados
 
 ### Obligatorios
 
@@ -698,10 +956,16 @@ clase de tarea + marcha + rol + entorno
 - Ejecutor y auditor como roles distintos.
 - Auditor de otro proveedor para trabajo sensible.
 - Aprobación humana para dinero, legal, fiscal, privacidad y producción.
+- Esfuerzo de razonamiento alto en Codex para dinero, legal y fiscal.
 - Especificación escrita antes de activar suplentes.
 - Registro explícito de costos desconocidos.
+- Inventario de herramientas y restricciones por motor.
 - Pruebas reales de sandbox y modo headless.
+- Prueba de que los permisos los bloquea el entorno, no el modelo.
+- Cuarentena inmediata cuando la frontera técnica no pueda demostrarse.
+- Prohibición de `agy-runner` en flujos desatendidos mientras continúe en cuarentena.
 - Trazabilidad de qué motor hizo qué.
+- Lectura de cuota sin procesar contenido de sesiones.
 
 ### Convenientes
 
@@ -710,14 +974,16 @@ clase de tarea + marcha + rol + entorno
 - Límites de tiempo por ejecución.
 - Presupuesto máximo por tarea.
 - Lista de archivos permitidos.
+- Allow-list que valide comandos y parámetros.
 - Revisión mensual de puestos.
 - Detección de telemetría desactualizada.
 - Procedimiento documentado para agotamiento de cupo.
+- Indicador de cuota manual para motores sin integración oficial.
 - Interruptor humano para detener todos los carriles.
 
 ---
 
-## 10. Invitación a la comunidad
+## 12. Invitación a la comunidad
 
 La forma más útil de mejorar Gearbox EV6 no es afirmar que un motor “gana”, sino publicar resultados reproducibles.
 
@@ -729,13 +995,17 @@ Puedes replicar el sistema con tus propias cuentas y abrir un issue en el reposi
 - Método oficial de autenticación.
 - Modo interactivo o headless.
 - Configuración de sandbox.
+- Estado operativo de cada wrapper.
 - Clase y marcha de las tareas.
+- Esfuerzo de razonamiento configurado.
+- Herramientas requeridas y disponibles.
 - Número de ejecuciones.
 - Aprobaciones, retrabajos y rechazos.
 - Hallazgos reales del auditor.
 - Falsos positivos.
 - Duración.
 - Costo confirmado o desconocido.
+- Método de lectura de cuota.
 - Comportamiento al agotarse el cupo.
 - Problemas de permisos.
 - Cómo funcionó la sucesión.
@@ -757,6 +1027,7 @@ Puedes replicar el sistema con tus propias cuentas y abrir un issue en el reposi
 - Ejecutor:
 - Auditor:
 - Versiones visibles:
+- Estado de cada wrapper:
 
 ## Autenticación
 - Flujos oficiales utilizados:
@@ -766,6 +1037,8 @@ Puedes replicar el sistema con tus propias cuentas y abrir un issue en el reposi
 ## Prueba
 - Clase de tarea:
 - Marcha:
+- Esfuerzo de razonamiento:
+- Herramientas requeridas:
 - Criterios de aceptación:
 - Número de ejecuciones:
 
@@ -778,8 +1051,15 @@ Puedes replicar el sistema con tus propias cuentas y abrir un issue en el reposi
 - Duración:
 - Costo confirmado:
 
+## Seguridad
+- Escritura técnicamente bloqueada: sí/no/no comprobado
+- Comandos y parámetros permitidos:
+- Pruebas adversariales realizadas:
+- Wrappers en cuarentena:
+
 ## Continuidad
 - ¿Se agotó algún cupo?
+- ¿Cómo se midió?
 - ¿Entró un suplente?
 - ¿Pudo continuar con la especificación disponible?
 
@@ -801,6 +1081,7 @@ No publiques:
 - Tokens.
 - Cookies.
 - Archivos de sesión.
+- Contenido extraído de sesiones.
 - Prompts con información privada.
 - Nombres de clientes.
 - Datos financieros.
@@ -810,21 +1091,44 @@ No publiques:
 
 ---
 
-## 11. Estado y alcance del proyecto
+## 13. Estado y alcance del proyecto
 
-Gearbox EV6 es una arquitectura operativa temprana. Sus principios centrales son replicables, pero sus asignaciones iniciales todavía necesitan calibración:
+Gearbox EV6 es una arquitectura operativa temprana. Sus principios centrales son replicables, pero sus asignaciones iniciales todavía necesitan calibración.
+
+### Resuelto en la versión 3
+
+- Lectura automática del porcentaje de uso de Codex sin procesar contenido de sesiones.
+- Estados automáticos de cupo `disponible`, `bajo` y `agotado` para Codex.
+- Esfuerzo de razonamiento `high` en el auditor Codex para dinero, legal y fiscal.
+- Inventario de manos como criterio de enrolamiento y asignación.
+- Detección y cuarentena del wrapper headless de Antigravity.
+- Confirmación de que el wrapper de Codex permanece aprobado y operativo.
+
+### Pendiente de verdad
+
+- La cuota de Antigravity continúa siendo manual.
+- `agy-runner` continúa en cuarentena.
+- Falta activar y verificar el sandbox real de Antigravity.
+- Falta restringir comandos y parámetros de su allow-list.
+- Falta demostrar en vivo que el motor de permisos bloquea escrituras.
+- Los costos no son igualmente visibles en todos los motores.
+- La comparación meritocrática todavía necesita más ejecuciones y datos.
+
+Los principios vigentes son:
 
 - Dos ejes: marcha y motor.
+- Asignación adicional por herramientas requeridas.
 - Puestos separados de los proveedores.
 - Sucesión con poderes restringidos.
 - Pareja ejecutor + auditor.
 - Auditoría cruzada para lo sensible.
 - Telemetría común.
 - Calibración basada en resultados.
+- Candados estructurales independientes del comportamiento del modelo.
 - Control humano sobre acciones irreversibles.
 
 La promesa razonable no es que varios modelos siempre produzcan una respuesta mejor. La promesa comprobable es más modesta:
 
-> Si se separan los roles, se conserva la trazabilidad y se mide el resultado, un equipo multi-motor puede detectar errores diferentes, resistir mejor el agotamiento de cupos y reducir la dependencia de un solo proveedor.
+> Si se separan los roles, se documentan cerebros y manos, se verifican los candados, se conserva la trazabilidad y se mide el resultado, un equipo multi-motor puede detectar errores diferentes, descubrir fronteras de seguridad débiles, resistir mejor el agotamiento de cupos y reducir la dependencia de un solo proveedor.
 
 Esa hipótesis debe seguir siendo probada con datos de la comunidad.

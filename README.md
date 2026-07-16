@@ -7,7 +7,7 @@
 **La marcha correcta y el motor correcto para cada tarea de IA — con auditoría cruzada y el humano como autoridad final.**
 
 [![Licencia MIT](https://img.shields.io/badge/Licencia-MIT-green?style=flat-square)](LICENSE)
-[![Estado](https://img.shields.io/badge/Estado-experimental_·_en_calibración-orange?style=flat-square)](docs/GEARBOX-EV6-MULTI-MOTOR.md#11-estado-y-alcance-del-proyecto)
+[![Estado](https://img.shields.io/badge/Estado-experimental_·_en_calibración-orange?style=flat-square)](docs/GEARBOX-EV6-MULTI-MOTOR.md#13-estado-y-alcance-del-proyecto)
 [![Doc técnica](https://img.shields.io/badge/Doc-Gearbox_EV6_Multi--Motor-1f6feb?style=flat-square)](docs/GEARBOX-EV6-MULTI-MOTOR.md)
 [![PRs bienvenidos](https://img.shields.io/badge/PRs-bienvenidos-brightgreen?style=flat-square)](#-contribuir--reportar-resultados)
 
@@ -33,11 +33,11 @@ Esto es **infraestructura temprana y honesta**: no comparte cuentas ni sesiones 
 - [Licencia](#-licencia)
 
 **Documento técnico completo:** [Gearbox EV6 — Torre de Control multi-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md)
-→ [Qué problema resuelve](docs/GEARBOX-EV6-MULTI-MOTOR.md#1-qué-problema-intenta-resolver) · [Arquitectura en 5 minutos](docs/GEARBOX-EV6-MULTI-MOTOR.md#2-arquitectura-en-cinco-minutos) · [Guía de replicación](docs/GEARBOX-EV6-MULTI-MOTOR.md#3-guía-de-replicación) · [Modo mono-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-modo-mono-motor-empezar-solo-con-claude-code) · [El primer día (caso real)](docs/GEARBOX-EV6-MULTI-MOTOR.md#5-el-primer-día-una-omisión-fiscal-detectada-por-auditoría-cruzada) · [Fricciones reales](docs/GEARBOX-EV6-MULTI-MOTOR.md#6-fricciones-reales-encontradas) · [Cómo evaluar tu réplica](docs/GEARBOX-EV6-MULTI-MOTOR.md#8-cómo-evaluar-tu-propia-réplica) · [Invitación a la comunidad](docs/GEARBOX-EV6-MULTI-MOTOR.md#10-invitación-a-la-comunidad)
+→ [Qué problema resuelve](docs/GEARBOX-EV6-MULTI-MOTOR.md#1-qué-problema-intenta-resolver) · [Arquitectura en 5 minutos](docs/GEARBOX-EV6-MULTI-MOTOR.md#2-arquitectura-en-cinco-minutos) · [Guía de replicación](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-guía-de-replicación) · [Modo mono-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md#5-modo-mono-motor-empezar-solo-con-claude-code) · [El primer día (caso real)](docs/GEARBOX-EV6-MULTI-MOTOR.md#6-el-primer-día-una-omisión-fiscal-detectada-por-auditoría-cruzada) · [Fricciones reales](docs/GEARBOX-EV6-MULTI-MOTOR.md#8-fricciones-reales-encontradas) · [Cómo evaluar tu réplica](docs/GEARBOX-EV6-MULTI-MOTOR.md#10-cómo-evaluar-tu-propia-réplica) · [Invitación a la comunidad](docs/GEARBOX-EV6-MULTI-MOTOR.md#12-invitación-a-la-comunidad)
 
 ## 🚀 Quick Start
 
-Gearbox se adopta **por capas**. No necesitas tres motores el primer día — la capa base funciona completa con solo Claude Code, y un segundo motor se suma cuando exista un caso real ([por qué](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-modo-mono-motor-empezar-solo-con-claude-code)).
+Gearbox se adopta **por capas**. No necesitas tres motores el primer día — la capa base funciona completa con solo Claude Code, y un segundo motor se suma cuando exista un caso real ([por qué](docs/GEARBOX-EV6-MULTI-MOTOR.md#5-modo-mono-motor-empezar-solo-con-claude-code)).
 
 ### Capa 1 — Mono-motor (Claude Code)
 
@@ -53,7 +53,7 @@ Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json
 
 ### Capa 2 — Multi-motor (opcional)
 
-Cada motor se instala y autentica **por separado, personalmente** — nunca se comparten cuentas, cookies ni archivos de sesión ([regla humana obligatoria](docs/GEARBOX-EV6-MULTI-MOTOR.md#33-autenticación-regla-humana-obligatoria)).
+Cada motor se instala y autentica **por separado, personalmente** — nunca se comparten cuentas, cookies ni archivos de sesión ([regla humana obligatoria](docs/GEARBOX-EV6-MULTI-MOTOR.md#43-autenticación-regla-humana-obligatoria)).
 
 1. **Codex CLI** — instálalo desde la fuente oficial de OpenAI e inicia sesión con tu propia cuenta. Invocación headless verificada (2026-07-15/16, solo lectura):
 
@@ -73,7 +73,7 @@ Cada motor se instala y autentica **por separado, personalmente** — nunca se c
    agy --sandbox --print "prompt"
    ```
 
-3. **Enrola cada motor** solo después de verificar invocación, modos, límites y costo — el [contrato mínimo de enrolamiento](docs/GEARBOX-EV6-MULTI-MOTOR.md#37-contrato-mínimo-para-enrolar-un-motor) tiene la plantilla.
+3. **Enrola cada motor** solo después de verificar invocación, modos, límites y costo — el [contrato mínimo de enrolamiento](docs/GEARBOX-EV6-MULTI-MOTOR.md#49-contrato-mínimo-para-enrolar-un-motor) tiene la plantilla.
 
 > [!WARNING]
 > Los comandos, instaladores y opciones de CLI envejecen. Verifica siempre la sintaxis vigente contra la documentación oficial de cada proveedor. Empieza con un repositorio de prueba y tareas reversibles — nunca con un pago, un deploy de producción ni una interpretación legal real.
@@ -138,7 +138,7 @@ Asignaciones **iniciales**, en calibración — la sucesión es meritocrática y
 
 Roles **restringidos por defecto para todos los motores**: aprobador financiero, aprobador legal, despliegue a producción. Eso lo decide el humano, siempre.
 
-Ninguna de estas asignaciones es permanente: se comparan resultados por `clase de tarea + marcha + rol + entorno` y los cambios de titular se proponen con evidencia y aprobación humana ([cómo evaluar](docs/GEARBOX-EV6-MULTI-MOTOR.md#8-cómo-evaluar-tu-propia-réplica)).
+Ninguna de estas asignaciones es permanente: se comparan resultados por `clase de tarea + marcha + rol + entorno` y los cambios de titular se proponen con evidencia y aprobación humana ([cómo evaluar](docs/GEARBOX-EV6-MULTI-MOTOR.md#10-cómo-evaluar-tu-propia-réplica)).
 
 </details>
 
@@ -153,13 +153,13 @@ No. Es un proyecto open-source independiente de OpenGravity / Gabriel Marquez. U
 <details>
 <summary><b>¿Necesito los tres motores para empezar?</b></summary>
 
-No. La capa base funciona completa con un solo motor (por ejemplo Claude Code): marchas G0–G5, roles ejecutor/auditor con agentes distintos del mismo proveedor, tablero de estados y ventanilla humana. Multi-motor es una evolución opcional que se suma cuando existe un caso real — auditoría cruzada de contenido sensible o continuidad cuando el motor principal se queda sin cupo. Detalle: [modo mono-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-modo-mono-motor-empezar-solo-con-claude-code).
+No. La capa base funciona completa con un solo motor (por ejemplo Claude Code): marchas G0–G5, roles ejecutor/auditor con agentes distintos del mismo proveedor, tablero de estados y ventanilla humana. Multi-motor es una evolución opcional que se suma cuando existe un caso real — auditoría cruzada de contenido sensible o continuidad cuando el motor principal se queda sin cupo. Detalle: [modo mono-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md#5-modo-mono-motor-empezar-solo-con-claude-code).
 </details>
 
 <details>
 <summary><b>¿Comparte cuentas o sesiones entre los agentes?</b></summary>
 
-Nunca. Cada CLI se autentica por separado mediante el flujo oficial del proveedor, y el login lo completa personalmente el operador humano. Prohibido: copiar cookies, pegar tokens en prompts, compartir archivos de sesión o automatizar credenciales en el repo. [Regla completa](docs/GEARBOX-EV6-MULTI-MOTOR.md#33-autenticación-regla-humana-obligatoria).
+Nunca. Cada CLI se autentica por separado mediante el flujo oficial del proveedor, y el login lo completa personalmente el operador humano. Prohibido: copiar cookies, pegar tokens en prompts, compartir archivos de sesión o automatizar credenciales en el repo. [Regla completa](docs/GEARBOX-EV6-MULTI-MOTOR.md#43-autenticación-regla-humana-obligatoria).
 </details>
 
 <details>
@@ -183,7 +183,7 @@ El instalador copia los archivos del skill a `~/.claude`, crea backup de `settin
 <details>
 <summary><b>¿Qué pasa cuando un motor se queda sin cupo?</b></summary>
 
-Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o el modo guardia conserva operaciones limitadas (continuar trabajos ya especificados, documentar avances, informar al humano) sin heredar los poderes del titular. Por eso cada tarea lleva una [especificación mínima](docs/GEARBOX-EV6-MULTI-MOTOR.md#38-especificación-mínima-de-una-tarea) que otro motor pueda retomar.
+Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o el modo guardia conserva operaciones limitadas (continuar trabajos ya especificados, documentar avances, informar al humano) sin heredar los poderes del titular. Por eso cada tarea lleva una [especificación mínima](docs/GEARBOX-EV6-MULTI-MOTOR.md#410-especificación-mínima-de-una-tarea) que otro motor pueda retomar.
 </details>
 
 ## 📚 Documentación
@@ -199,7 +199,7 @@ Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o
 
 La forma más útil de mejorar Gearbox EV6 no es afirmar que un motor "gana", sino **publicar resultados reproducibles**. Replica el sistema con tus propias cuentas y comparte lo que midas:
 
-- **[Abre un issue](https://github.com/GabrielMarquez01/gearbox-skill/issues)** con tu réplica usando la [plantilla sugerida](docs/GEARBOX-EV6-MULTI-MOTOR.md#10-invitación-a-la-comunidad): entorno, motores y versiones, aprobaciones/retrabajos/rechazos, hallazgos reales del auditor, falsos positivos, costo confirmado o desconocido, y cómo funcionó la sucesión.
+- **[Abre un issue](https://github.com/GabrielMarquez01/gearbox-skill/issues)** con tu réplica usando la [plantilla sugerida](docs/GEARBOX-EV6-MULTI-MOTOR.md#12-invitación-a-la-comunidad): entorno, motores y versiones, aprobaciones/retrabajos/rechazos, hallazgos reales del auditor, falsos positivos, costo confirmado o desconocido, y cómo funcionó la sucesión.
 - **[Manda un PR](https://github.com/GabrielMarquez01/gearbox-skill/pulls)** si tienes una calibración con evidencia, un port o una traducción.
 - **⭐ Dale una estrella** si lo probaste y te fue útil — es la señal más simple de que vale la pena seguir iterándolo.
 - **Watch → Releases only** si quieres recibir solo las iteraciones importantes, con notas de qué cambió y por qué.
