@@ -1,409 +1,224 @@
 <div align="center">
 
-![Gearbox](assets/banner.svg)
+![Gearbox EV6 — Torre de Control multi-motor](docs/assets/gearbox-ev6-banner.png)
 
-**Deja de pagar precio de Opus por tareas de Haiku.**
-Gearbox es un **recomendador de modelo y esfuerzo para Claude Code**: clasifica cada tarea,
-te dice la marcha óptima con el comando exacto, delega lo rutinario automáticamente cuando puede,
-y muestra la marcha activa en azul bajo tu terminal.
+# Gearbox
 
-[![Instalar](https://img.shields.io/badge/⚙_INSTALAR-1_línea,_2_minutos-1f6feb?style=for-the-badge)](#-instalación)
-[![Licencia MIT](https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-v2.1.170+-8b5cf6?style=for-the-badge)](https://code.claude.com)
+**La marcha correcta y el motor correcto para cada tarea de IA — con auditoría cruzada y el humano como autoridad final.**
 
-*Incluye soporte para **Claude Fable 5** (marcha G5) — el modelo más capaz de Anthropic.*
+[![Licencia MIT](https://img.shields.io/badge/Licencia-MIT-green?style=flat-square)](LICENSE)
+[![Estado](https://img.shields.io/badge/Estado-experimental_·_en_calibración-orange?style=flat-square)](docs/GEARBOX-EV6-MULTI-MOTOR.md#11-estado-y-alcance-del-proyecto)
+[![Doc técnica](https://img.shields.io/badge/Doc-Gearbox_EV6_Multi--Motor-1f6feb?style=flat-square)](docs/GEARBOX-EV6-MULTI-MOTOR.md)
+[![PRs bienvenidos](https://img.shields.io/badge/PRs-bienvenidos-brightgreen?style=flat-square)](#-contribuir--reportar-resultados)
 
 </div>
 
 ---
 
-## 🎬 Así se ve
+Gearbox nació como un **skill para Claude Code** que clasifica cada tarea en una *marcha* de esfuerzo (G0–G5) y recomienda el modelo y el razonamiento adecuados **antes de gastar** — para dejar de pagar precio de modelo grande por trabajo de modelo chico, y de pagar retrabajos por correr lo difícil en el modelo barato.
 
-![Demo](assets/demo.svg)
+**Gearbox EV6** es su evolución: una *torre de control* para equipos de IA **multi-motor**. Un coordinador asigna trabajo a distintos motores —hoy Claude, Codex y Antigravity— según tipo de tarea, esfuerzo, disponibilidad y desempeño medido. Todo flujo autónomo exige dos roles separados (**ejecutor + auditor**), y lo sensible —dinero, legal, fiscal, datos personales— exige **auditoría cruzada entre proveedores** y aprobación humana. En su primer día operativo, una auditoría cruzada con Codex detectó una omisión fiscal real (Regla Miscelánea 3.13.7) que la revisión primaria no vio.
 
-Escribes tu tarea → Gearbox la clasifica → si conviene otra marcha, **pausa y te lo dice antes de gastar**: comando exacto, razón en una frase, y cuánto ahorras (o cuánto cuesta no cambiar). La línea azul de abajo siempre muestra tu marcha, modelo real y esfuerzo.
+Esto es **infraestructura temprana y honesta**: no comparte cuentas ni sesiones entre agentes, no promete que dos modelos siempre acierten, y documenta sus fricciones reales (sandbox de Windows, autorización headless, cupos poco visibles) para que sean **reproducibles y medibles**, no para esconderlas.
 
-## 🧭 No es otro statusline
+## 📑 Índice
 
-La mayoría de herramientas para Claude Code te dicen **cuánto gastaste**. Gearbox intenta ayudarte a decidir **antes de gastar**.
+- [Quick Start](#-quick-start)
+- [Cómo se organiza la flota](#-cómo-se-organiza-la-flota)
+- [Las marchas G0–G5](#-las-marchas-g0g5)
+- [Comparativa de motores](#-comparativa-de-motores) *(colapsable)*
+- [FAQ](#-faq) *(colapsable)*
+- [Documentación](#-documentación)
+- [Contribuir / reportar resultados](#-contribuir--reportar-resultados)
+- [Licencia](#-licencia)
 
-| Herramienta | Punto fuerte | Modelos nuevos | Qué le falta frente a Gearbox |
-|---|---|---|---|
-| **ccusage statusline** | Costo real, gasto diario, burn rate, bloques de uso | Depende de su tabla de pricing y updates | Observa consumo; no recomienda cambiar de marcha por tarea |
-| **Claude Powerline** | Statusline pulido, temas, costo, soporte de pricing para `claude-fable-5` | Sí incluye Fable 5 en pricing | Muestra estado; no clasifica intención ni propone `/model`/`/effort` |
-| **CCometixLine** | Statusline robusto en Rust, TUI, reconocimiento flexible de modelos | Reconoce nuevas versiones por patrón, como Sonnet 5 | Buen display; no es un protocolo de decisión de costo/calidad |
-| **claude-code-statusline** | Simple, directo, muestra modelo/tokens/costo | Más centrado en Sonnet 4.5/Opus/Haiku | No cubre Fable 5 ni routing por complejidad |
-| **Claude Code nativo** | Aliases oficiales (`haiku`, `sonnet`, `opus`, `fable`, `best`, `opusplan`) | Sí, vía aliases oficiales | Te da las piezas; Gearbox pone la regla de decisión |
+**Documento técnico completo:** [Gearbox EV6 — Torre de Control multi-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md)
+→ [Qué problema resuelve](docs/GEARBOX-EV6-MULTI-MOTOR.md#1-qué-problema-intenta-resolver) · [Arquitectura en 5 minutos](docs/GEARBOX-EV6-MULTI-MOTOR.md#2-arquitectura-en-cinco-minutos) · [Guía de replicación](docs/GEARBOX-EV6-MULTI-MOTOR.md#3-guía-de-replicación) · [Modo mono-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-modo-mono-motor-empezar-solo-con-claude-code) · [El primer día (caso real)](docs/GEARBOX-EV6-MULTI-MOTOR.md#5-el-primer-día-una-omisión-fiscal-detectada-por-auditoría-cruzada) · [Fricciones reales](docs/GEARBOX-EV6-MULTI-MOTOR.md#6-fricciones-reales-encontradas) · [Cómo evaluar tu réplica](docs/GEARBOX-EV6-MULTI-MOTOR.md#8-cómo-evaluar-tu-propia-réplica) · [Invitación a la comunidad](docs/GEARBOX-EV6-MULTI-MOTOR.md#10-invitación-a-la-comunidad)
 
-**Posicionamiento:** ccusage/Powerline/CCometixLine son tableros. Gearbox es el copiloto que te dice cuándo bajar, mantener o subir de modelo.
+## 🚀 Quick Start
 
-### Qué sí hace
+Gearbox se adopta **por capas**. No necesitas tres motores el primer día — la capa base funciona completa con solo Claude Code, y un segundo motor se suma cuando exista un caso real ([por qué](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-modo-mono-motor-empezar-solo-con-claude-code)).
 
-- Recomienda la marcha correcta antes de empezar una tarea.
-- Da el comando exacto: `/model opusplan`, `/model opus`, `/effort medium`, `claude --model fable`, etc.
-- Explica la razón en una frase y el impacto económico estimado.
-- Mantiene una bitácora para calibrar después con evidencia.
+### Capa 1 — Mono-motor (Claude Code)
 
-### Qué no promete
-
-- No cambia el modelo principal sin el humano: Claude Code no expone un cambio automático universal para eso.
-- No compite con dashboards de gasto: puede convivir con `ccusage` o Powerline.
-- No activa Fable 5 solo: siempre requiere gate de costo explícito.
-
-## ⚙ Instalación
-
-**Opción A — 1 línea (recomendada):**
+Instala el skill Gearbox (marchas G0–G5, statusline, bitácora de calibración):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/GabrielMarquez01/gearbox-skill/master/install.sh | bash
 ```
 
-**Opción B — manual:** clona el repo y corre `bash install.sh`, o copia los archivos según [instalación manual](#-instalación-manual).
+Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json` antes de tocarlo. Si prefieres revisar antes de ejecutar: clona el repo y corre `bash install.sh`. Detalle completo del skill en el [README clásico](README-viejo.md).
 
-Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json` antes de tocarlo.
+> Requisitos: Claude Code v2.1.170+ (`claude update`) · bash · python3. Los scripts son bash+sed puros.
 
-> Requisitos: Claude Code v2.1.170+ (`claude update`) · bash · python3 (para el merge seguro de settings). Sin más dependencias — los scripts son bash+sed puros, no necesitas jq.
+### Capa 2 — Multi-motor (opcional)
 
-## 🏎️ Las Marchas
+Cada motor se instala y autentica **por separado, personalmente** — nunca se comparten cuentas, cookies ni archivos de sesión ([regla humana obligatoria](docs/GEARBOX-EV6-MULTI-MOTOR.md#33-autenticación-regla-humana-obligatoria)).
 
-> **Regla de oro:** usa la marcha más baja que entregue resultado confiable, y sube solo cuando el riesgo, dinero o complejidad lo justifique.
+1. **Codex CLI** — instálalo desde la fuente oficial de OpenAI e inicia sesión con tu propia cuenta. Invocación headless verificada (2026-07-15/16, solo lectura):
 
-| Marcha | Para qué | Modelo · Esfuerzo | Cómo se activa | Economía |
-|---|---|---|---|---|
-| **G0 Rutina** | búsquedas, logs, formateo | Haiku · low | 🤖 automático (subagentes) | **−67%** vs Sonnet |
-| **G1 Contenido** | copy, redacción, SEO | Sonnet · medium | `/effort medium` | −30-50% razonamiento |
-| **G2 Ejecución** | features, UI, fixes | Sonnet · high | *default* | base |
-| **G3 Planeación** | PRPs, features grandes | **opusplan** | `/model opusplan` → 🤖 Opus planea, Sonnet ejecuta, cambia solo | Opus solo al planear |
-| **G3.5 Turno profundo** | 1 pregunta difícil | ultrathink | palabra `ultrathink` en el prompt | $0 de cambio |
-| **G4 Crítico** | seguridad, producción caída | Opus · high | `/model opus` · `/fast` para latencia baja | ≈1.7× Sonnet estándar, se paga solo |
-| **G5 Arquitectura** | ecosistema completo, infraestructura, decisiones multi-repo | **Fable 5** · high | `/model fable` o `claude --model fable` + gate de costo | 2× Opus |
+   ```bash
+   codex exec --sandbox read-only
+   ```
 
-Precios de referencia (jul 2026, por millón de tokens in/out): Haiku $1/$5 · Sonnet $3/$15 estándar (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus $5/$25 · **Fable 5 $10/$50**.
-También existe el alias `best`: usa Fable si tu organización tiene acceso, si no el mejor Opus disponible. `/fast` activa el modo rápido de Opus (más velocidad de salida, mismo modelo) — útil en G4 cuando la latencia importa tanto como la calidad.
+2. **Antigravity CLI** — instalador oficial de Google, verificado 2026-07-15/16:
 
-## 🎯 Qué significa `G5*` (el asterisco)
+   ```bash
+   curl -fsSL https://antigravity.google/cli/install.sh | bash
+   ```
 
-A partir de la **V2** el statusline muestra la marcha **derivada del modelo real**, no la guardada. El asterisco aparece cuando las dos difieren:
+   Prueba headless verificada (requiere *allow-rules* de permisos; su configuración completa es una limitación conocida):
 
+   ```bash
+   agy --sandbox --print "prompt"
+   ```
+
+3. **Enrola cada motor** solo después de verificar invocación, modos, límites y costo — el [contrato mínimo de enrolamiento](docs/GEARBOX-EV6-MULTI-MOTOR.md#37-contrato-mínimo-para-enrolar-un-motor) tiene la plantilla.
+
+> [!WARNING]
+> Los comandos, instaladores y opciones de CLI envejecen. Verifica siempre la sintaxis vigente contra la documentación oficial de cada proveedor. Empieza con un repositorio de prueba y tareas reversibles — nunca con un pago, un deploy de producción ni una interpretación legal real.
+
+## 🗼 Cómo se organiza la flota
+
+Los **puestos** (responsabilidades) están separados de los **motores** (Claude, Codex, Antigravity). Los puestos se asignan por evidencia de desempeño, no por preferencia de marca — y pueden rotar con datos.
+
+```mermaid
+flowchart TD
+    H["👤 Operador humano · autoridad final"] --> C["🗼 Coordinador<br/>clasifica la tarea, asigna motores,<br/>mantiene el canal humano"]
+    C --> E["🔧 Ejecutor<br/>produce el resultado<br/>dentro del alcance definido"]
+    C --> A["🔍 Auditor<br/>intenta refutar el resultado<br/>(otro proveedor si es sensible)"]
+    E -->|entrega| A
+    A -->|"no cumple → retrabajo"| E
+    A -->|"cumple criterios"| H
+
+    subgraph F["⚙️ Flota de motores enrolados"]
+        M1["Claude"]
+        M2["Codex"]
+        M3["Antigravity"]
+    end
+
+    C -. "asigna motor por tarea:<br/>riesgo · spec · cupo · historial · costo" .-> F
 ```
-⚙ G5* · Fable 5 · high · ejecución · ≈5x  · state=G2
-```
 
-| Parte | Qué significa |
+Dos puestos más completan la continuidad: el **suplente** mantiene el flujo cuando el titular no está disponible, y la **guardia** conserva operaciones limitadas si el coordinador se queda sin cupo — sin poder desplegar, autorizar gastos, ejecutar pagos ni ampliar el alcance ([sucesión meritocrática](docs/GEARBOX-EV6-MULTI-MOTOR.md#22-sucesión-meritocrática)).
+
+## 🏎️ Las marchas G0–G5
+
+Cada tarea se clasifica en **dos ejes**: `marcha de esfuerzo × motor asignado`. La marcha representa esfuerzo, riesgo o profundidad de razonamiento — no el motor: una tarea G2 puede ejecutarse con distintos motores.
+
+| Marcha | Uso orientativo |
 |---|---|
-| `G5*` | El modelo real (Fable) corresponde a G5; el asterisco dice "pero state.json guarda otra cosa" |
-| `≈5x` | Multiplicador vs Sonnet base — brújula de costo, **no factura** |
-| `state=G2` | Ámbar: lo que está almacenado en state.json |
+| **G0** | Operación mecánica o consulta trivial |
+| **G1** | Redacción o transformación simple |
+| **G2** | Construcción con especificación clara |
+| **G3** | Trabajo ambiguo o con varias dependencias |
+| **G4** | Auditoría crítica, dinero, legal, fiscal o privacidad |
+| **G5** | Decisión arquitectónica o sistémica de alto impacto |
 
-**Para resolver el asterisco:**
+> **Regla de oro:** usa la marcha más baja que entregue resultado confiable, y sube solo cuando el riesgo, dinero o complejidad lo justifique. Para dinero, legal, fiscal o datos personales, la eficiencia **nunca** elimina la revisión cruzada ni la aprobación humana.
 
-```bash
-~/.claude/gearbox/set.sh G5 arquitectura high   # anclar a G5
-~/.claude/gearbox/set.sh auto                   # o volver a auto (nunca habrá asterisco)
-```
+La implementación concreta para Claude Code (comandos `/model` y `/effort`, statusline, multiplicadores de costo) está en el [README clásico del skill](README-viejo.md) y en [SKILL.md](SKILL.md).
 
-> El asterisco nunca bloquea trabajo. Es solo información.
+## ⚖️ Comparativa de motores
 
-## ⚙ `gear=auto` — el modo recomendado
+<details>
+<summary><b>Los tres motores enrolados hoy — puestos, autenticación y estado verificado</b></summary>
 
-`reset.sh` escribe `{"gear":"auto"}` al inicio de cada sesión. Con `auto`:
-- El statusline muestra la marcha derivada del modelo real, sin asterisco nunca.
-- Si arrancas con Fable → muestra G5. Si usas Sonnet → muestra G2. Automático.
-- Solo usa `set.sh` cuando quieras **anclar** una marcha específica (y limpiarla con `set.sh auto` al terminar).
+<br>
 
-## 🕹 Usar `set.sh`
+Asignaciones **iniciales**, en calibración — la sucesión es meritocrática y se revisa con evidencia, no con anécdotas.
 
-```bash
-# Fijar marcha (con task y effort opcionales)
-~/.claude/gearbox/set.sh G5 arquitectura high
-~/.claude/gearbox/set.sh G2 ejecución high
-~/.claude/gearbox/set.sh G0 rutina low
+| | Claude (Anthropic) | Codex (OpenAI) | Antigravity (Google) |
+|---|---|---|---|
+| **Puesto inicial** | Coordinador | Ejecutor / auditor / suplente | Ejecutor / auditor / suplente (tercer motor enrolado) |
+| **Cuenta requerida** | Cuenta propia compatible con Claude Code | Suscripción propia de ChatGPT que habilite Codex CLI | Cuenta propia de Google compatible |
+| **Invocación verificada (2026-07-15/16)** | Claude Code (flujo oficial) | `codex exec --sandbox read-only` | `agy --sandbox --print "prompt"` |
+| **Fricción conocida** | — | Sandbox de Windows; desde WSL puede requerir wrapper de PowerShell | Autorización headless pendiente de configuración completa (*allow-rules*) |
+| **Rol en este mismo repo** | Coordinación y auditoría del doc EV6 | Redacción del doc EV6; auditor cruzado del caso fiscal | Tercer motor enrolado en la flota |
 
-# Volver a modo auto
-~/.claude/gearbox/set.sh auto
+Roles **restringidos por defecto para todos los motores**: aprobador financiero, aprobador legal, despliegue a producción. Eso lo decide el humano, siempre.
 
-# Marchas válidas: auto G0 G1 G2 G3 G3.5 G4 G5
-```
+Ninguna de estas asignaciones es permanente: se comparan resultados por `clase de tarea + marcha + rol + entorno` y los cambios de titular se proponen con evidencia y aprobación humana ([cómo evaluar](docs/GEARBOX-EV6-MULTI-MOTOR.md#8-cómo-evaluar-tu-propia-réplica)).
 
-`set.sh` escribe `state.json`, llama a `log.sh` (bitácora automática) y confirma con un mensaje.
-
-## 💲 El multiplicador `≈Nx` — brújula, no factura
-
-`prices.json` guarda multiplicadores relativos vs Sonnet base. El statusline los muestra como orientación:
-
-| Modelo | Multiplicador |
-|---|---|
-| Haiku | ≈0.5x |
-| Sonnet | ≈1x (base) |
-| Opus | ≈2.5x |
-| Fable | ≈5x |
-
-**Fuente final siempre: `/usage`** — el multiplicador es aproximado y no reemplaza la factura real.
-Si el payload de Claude Code trae un costo real de sesión (`cost.total_cost_usd`), el statusline lo muestra como `~$X est.`
-
-Para actualizar precios: editar `~/.claude/gearbox/prices.json` (no se sobrescribe en reinstalaciones).
-
-## 📊 La barra de `/usage` — cuánto llevas quemado
-
-Desde Claude Code v2.1.80 el payload de statusline incluye `rate_limits.{five_hour,seven_day}.used_percentage` — el mismo dato que muestra `/usage`, sin API externa ni polling. El statusline la agrega después del multiplicador:
-
-```
-⚙ G2 · Sonnet 5 · high · ejecución · ≈1x · ▓▓▓░░ 61% 7d · 24% 5h
-```
-
-- **7d** (el recurso escaso en plan Pro): barra de 5 bloques `▓`/`░` + porcentaje.
-- **5h**: solo el número — cambia rápido, una barra ahí marearía más que ayudar.
-- Colores: <50% verde · 50–79% ámbar · ≥80% rojo.
-- Si tu plan no expone `rate_limits` (API, free, o el primer turno de la sesión), la sección
-  simplemente no aparece — cada ventana puede faltar por separado, Gearbox nunca inventa un número.
-- **La pieza gearbox-nativa:** si 7d≥80% y la marcha activa es G4 o G5, aparece un hint ámbar —
-  `⚠ 7d al NN% en marcha cara — considera bajar`. El `≈Nx` dice qué tan rápido quemas; la barra
-  dice cuánto llevas quemado; el hint conecta ambos con la decisión de marcha.
-
-## 🧠 Cómo funciona
-
-```
-Tu prompt
-   ↓
-1. LEER     — Gearbox clasifica la tarea contra la tabla (costo ≈ $0, es parte de leer tu prompt)
-2. COMPARAR — ¿marcha recomendada ≠ configuración actual?
-   ├─ NO → trabaja directo, sin ruido
-   └─ SÍ → 3. PAUSA + bloque ⚙ GEARBOX antes de gastar un token de más
-   ↓
-4. BITÁCORA — cada decisión queda en ~/.claude/gearbox/decisions.jsonl (separada de
-   events.jsonl, que solo registra cambios de estado sin valor de calibración)
-   → con ≥10 decisiones por skill, Gearbox propone calibrar su esfuerzo CON EVIDENCIA
-```
-
-**Los 3 errores de dinero que ataca:**
-1. 💸 Correr todo en el modelo grande "por si acaso" → 40-400% extra en tareas que Sonnet/Haiku resuelven igual
-2. 🔄 Correr lo difícil en el modelo barato → retrabajos que cuestan más que el ahorro
-3. 👻 El invisible: cambiar de modelo **a mitad de sesión** reinicia el caché de prompt (descuento del 90% perdido — la siguiente respuesta relee TODO tu historial a precio completo). Gearbox recomienda en el momento correcto: al inicio de la tarea.
-
-## 💰 Números reales (datos de una sesión real, 2026-07-04)
-
-> Para el usuario técnico y no técnico: esto es lo que pasa cuando divides los roles bien.
-
-Una sesión de trabajo intenso (~6 horas, 15 deploys, 30 archivos editados, auditoría de seguridad completa):
-
-| Escenario | Costo estimado | Comparado con todo en Fable |
-|---|---|---|
-| Todo en **Fable 5** | $25–50 | base (el más caro) |
-| **Fable planea + Opus ejecuta** (lo que ocurrió sin Gearbox activo) | ~$12–25 | **−50%** |
-| **Fable planea + Sonnet ejecuta** (lo que recomienda Gearbox) | ~$7–15 | **−70%** |
-| Rutina delegada a **Haiku** | ~$2.50–5 | **−90%** |
-
-**En cristiano:** si usas Fable para pensar el problema difícil y Sonnet para construir la solución, pagas 3 veces menos que si dejas a Fable hacer todo. Y si además delegas las búsquedas y formateos a Haiku, llegas a 10× más barato.
-
-**Lo que reveló la sesión:** el Gearbox detectó que la sesión corría en Opus cuando debía correr en Sonnet — diferencia invisible, pero ~20% de sobre-pago. Ese hallazgo originó la detección de desincronización (`⚠ desync`) que ahora incluye el statusline.
-
-> Margen de error: ±20% (los tokens exactos solo los ve Anthropic en `/usage`). Los ratios son fijos — vienen de precios públicos, no de estimaciones.
-
-**Para usuarios con plan Pro/Max:** el ahorro se traduce en *consumir tus límites más lento* — Fable consume ~2× más rápido que Opus, y Haiku consume ~5× menos que Sonnet. Mismo trabajo, más tiempo antes de toparte con el techo.
-
-## ⚡ Guía de eficiencia (úsala aunque no instales nada)
-
-El Gearbox elige el modelo por ti, pero **la mitad del ahorro son hábitos** — y esos funcionan con
-o sin la skill. Reunimos las 8 prácticas que más bajan el gasto (sesiones, contexto, MCP, caché)
-en una guía práctica de "ábrela y úsala":
-
-**→ [EFICIENCIA.md](EFICIENCIA.md)** — 8 prácticas + checklist rápido, sin setup, sin dependencias.
-
-Un adelanto de las que más pesan:
-- **Higiene de sesión** — `/compact` a media tarea larga, `/clear` al cambiar de tema
-- **Cuida los MCP** — cada resultado se queda en contexto; desconecta lo que no usas, no dupliques
-- **No re-consultes lo que no cambia** — cachea el esquema/config en un archivo, no en cada sesión
-- **Mide** — corre `/usage` para ver de dónde viene tu gasto antes de optimizar
-
-## 🔮 Fable 5 — la marcha G5
-
-[Claude Fable 5](https://www.anthropic.com/news/claude-fable-5-mythos-5) es el modelo más capaz que Anthropic ha liberado (junio 2026, re-disponible desde julio tras los controles de exportación). Contexto de **1M tokens**, salida de 128k, hecho para tareas "más grandes que una sentada": arquitectura de sistemas, investigaciones de causa raíz, sesiones autónomas largas.
-
-### Ventana Fable 5: úsalo con intención
-
-Anthropic anunció que Fable 5 está disponible globalmente desde el **2026-07-01** en Claude Platform, Claude.ai, Claude Code y Claude Cowork. Para Pro, Max, Team y algunos planes Enterprise, estuvo incluido hasta **50% de los límites semanales hasta el 2026-07-07**; esa ventana ya cerró — desde entonces se usa vía créditos de uso si tu plan los tiene habilitados. Fuente: [Redeploying Fable 5](https://www.anthropic.com/news/redeploying-fable-5).
-
-Eso no significa "úsalo para todo". Significa: gastarlo en decisiones que cambian la dirección del proyecto, tengas o no acceso incluido.
-
-**Úsalo para:**
-- Blueprint de arquitectura de un producto o ecosistema completo
-- Infraestructura, seguridad, datos, integraciones y tradeoffs difíciles
-- Analizar varios repos/documentos juntos sin perder contexto
-- Encontrar causa raíz de bugs complejos o problemas de producción
-- Convertir una visión ambigua en plan de ejecución por fases
-
-**No lo uses para:**
-- Copy, SEO, prompts simples o brainstorming ligero
-- Fixes pequeños, formateo, renombres, logs o lectura mecánica
-- Implementar tareas ya definidas que Sonnet puede ejecutar bien
-- Preguntas que se validan mejor con usuarios reales que con más razonamiento
-
-Prompt recomendado para G5:
-
-```text
-Estoy usando Fable 5. No implementes todavía.
-Analiza el contexto completo y dame:
-1. arquitectura recomendada,
-2. riesgos y tradeoffs,
-3. plan por fases,
-4. qué debe ejecutar Sonnet,
-5. qué puede delegarse a Haiku,
-6. cuándo tendría sentido volver a Fable.
-```
-
-Gearbox lo trata como marcha especial:
-- **Nunca se activa solo** — siempre con gate de costo explícito (es 2× Opus: $10/$50)
-- Se usa idealmente al inicio de una sesión dedicada (`/model fable` o `claude --model fable`), no a mitad de una tarea larga
-- El punto dulce: cargar tu ecosistema, restricciones y objetivos en el contexto de 1M y pedirle el blueprint completo
-- Si el tema toca ciberseguridad o biología, puede haber rechazos o fallback por clasificadores de seguridad; no es una falla de Gearbox
-
-También existe el alias `best`: usa Fable si tu organización tiene acceso, si no el mejor Opus.
-
-### ¿Y Claude Mythos 5?
-
-Mythos 5 es **el mismo modelo que Fable 5 pero con salvaguardas levantadas** en ciertas áreas (ciberseguridad ofensiva, biología). **No es de acceso público y no tiene auto-enrolamiento**:
-
-- Restringido a **partners de [Project Glasswing](https://www.anthropic.com/project/glasswing)** (equipos de ciberdefensa e infraestructura crítica) e investigadores de biología seleccionados
-- Requiere acuerdos formales bajo ASL-4, vetting de personal, auditoría continua y retención obligatoria de 30 días del tráfico
-- El camino: contactar a tu account team de Anthropic, AWS o Google Cloud y pasar la aprobación
-
-**Para el 99.9% de desarrolladores: Fable 5 ES el techo.** Si Fable rechaza una solicitud legítima de seguridad (sus clasificadores re-rutean a Opus 4.8 automáticamente), esa es la señal de que tu caso de uso requeriría el programa Glasswing.
+</details>
 
 ## ❓ FAQ
 
-<details><summary><b>¿Cambia el modelo de mi sesión automáticamente?</b></summary>
+<details>
+<summary><b>¿Gearbox es oficial de Anthropic, OpenAI o Google?</b></summary>
 
-Lo que puede ser automático, lo es: las subtareas rutinarias van a Haiku vía subagentes sin preguntarte, y `opusplan` cambia solo entre Opus (planear) y Sonnet (ejecutar). El modelo **principal** de la sesión solo puede cambiarlo el humano — no existe API para que Claude se cambie a sí mismo — por eso Gearbox te da el comando exacto listo para copiar.
+No. Es un proyecto open-source independiente de OpenGravity / Gabriel Marquez. Usa piezas oficiales de cada CLI (statusline, aliases de modelo, skills, comandos), pero no está afiliado ni respaldado por ningún proveedor.
 </details>
 
-<details><summary><b>¿Gearbox es oficial de Anthropic?</b></summary>
+<details>
+<summary><b>¿Necesito los tres motores para empezar?</b></summary>
 
-No. Gearbox es un proyecto open-source independiente de OpenGravity/Gabriel Marquez. Usa piezas oficiales de Claude Code como `statusLine`, aliases de modelo, skills, subagentes y comandos `/model`/`/effort`, pero no está afiliado ni respaldado por Anthropic.
+No. La capa base funciona completa con un solo motor (por ejemplo Claude Code): marchas G0–G5, roles ejecutor/auditor con agentes distintos del mismo proveedor, tablero de estados y ventanilla humana. Multi-motor es una evolución opcional que se suma cuando existe un caso real — auditoría cruzada de contenido sensible o continuidad cuando el motor principal se queda sin cupo. Detalle: [modo mono-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-modo-mono-motor-empezar-solo-con-claude-code).
 </details>
 
-<details><summary><b>¿Es seguro instalarlo con curl | bash?</b></summary>
+<details>
+<summary><b>¿Comparte cuentas o sesiones entre los agentes?</b></summary>
 
-El instalador copia 7 archivos a `~/.claude` (`SKILL.md`, `README.md`, `statusline.sh`, `reset.sh`, `set.sh`, `log.sh` y `prices.json`, este último solo si no existe ya uno), crea backup de `settings.json`, registra `statusLine` y agrega una directiva a `CLAUDE.md`. Aun así, si prefieres revisar antes de ejecutar, clona el repo y corre `bash install.sh` manualmente.
+Nunca. Cada CLI se autentica por separado mediante el flujo oficial del proveedor, y el login lo completa personalmente el operador humano. Prohibido: copiar cookies, pegar tokens en prompts, compartir archivos de sesión o automatizar credenciales en el repo. [Regla completa](docs/GEARBOX-EV6-MULTI-MOTOR.md#33-autenticación-regla-humana-obligatoria).
 </details>
 
-<details><summary><b>¿La ventana de Fable 5 hasta el 2026-07-07 significó uso gratis ilimitado?</b></summary>
+<details>
+<summary><b>¿Los agentes pueden aprobar pagos, deploys o decisiones legales?</b></summary>
 
-No, y esa ventana ya cerró. Anthropic anunció inclusión hasta 50% de límites semanales para Pro, Max, Team y algunos Enterprise hasta el 2026-07-07. No fue ilimitado, dependía del plan, y desde que cerró se usa vía usage credits si tu cuenta los tiene habilitados. Gearbox la mencionó como oportunidad temporal, nunca como promesa permanente.
+No. Toda tarea relacionada con dinero, fiscalidad, asuntos legales o datos personales necesita auditoría cruzada entre proveedores **y** decisión humana final. Ni siquiera el modo guardia (continuidad cuando se agota el cupo) puede desplegar, autorizar gastos o ampliar el alcance.
 </details>
 
-<details><summary><b>¿Por qué no usar Fable 5 para todo?</b></summary>
+<details>
+<summary><b>¿Dos modelos garantizan una respuesta correcta?</b></summary>
 
-Porque Fable 5 cuesta más, consume límites más rápido y su valor real está en decisiones difíciles: arquitectura, infraestructura, raíz de bugs complejos y contexto grande. Para implementación normal, Sonnet suele ser mejor equilibrio. Para rutina, Haiku o subagentes baratos son suficientes.
+No, y el proyecto no lo promete. La promesa comprobable es más modesta: si se separan los roles, se conserva la trazabilidad y se mide el resultado, un equipo multi-motor puede detectar errores diferentes, resistir mejor el agotamiento de cupos y reducir la dependencia de un solo proveedor. Esa hipótesis se sigue probando con datos de la comunidad.
 </details>
 
-<details><summary><b>¿Qué pasa si Fable 5 rechaza una tarea?</b></summary>
+<details>
+<summary><b>¿Es seguro instalar el skill con curl | bash?</b></summary>
 
-Fable 5 tiene clasificadores de seguridad más estrictos, especialmente en áreas como ciberseguridad o biología. Puede rechazar o hacer fallback a otro modelo. Eso no rompe Gearbox: simplemente significa que conviene seguir con Opus/Sonnet o reformular la tarea de forma defensiva y legítima.
+El instalador copia los archivos del skill a `~/.claude`, crea backup de `settings.json` y registra el statusline. Si prefieres revisar antes de ejecutar, clona el repo y corre `bash install.sh` manualmente. Detalle en el [README clásico](README-viejo.md).
 </details>
 
-<details><summary><b>¿Funciona con plan Pro/Max o solo con API?</b></summary>
+<details>
+<summary><b>¿Qué pasa cuando un motor se queda sin cupo?</b></summary>
 
-Ambos. Con suscripción, el "ahorro" se traduce en consumir tus límites más lento (Fable consume ~2× más rápido que Opus; Haiku muchísimo menos que Sonnet). Con API, es dinero directo.
+Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o el modo guardia conserva operaciones limitadas (continuar trabajos ya especificados, documentar avances, informar al humano) sin heredar los poderes del titular. Por eso cada tarea lleva una [especificación mínima](docs/GEARBOX-EV6-MULTI-MOTOR.md#38-especificación-mínima-de-una-tarea) que otro motor pueda retomar.
 </details>
 
-<details><summary><b>¿Cuánto ahorra realmente?</b></summary>
+## 📚 Documentación
 
-Depende de tu mezcla de tareas. Referencia: si hoy corres todo en Opus y tu trabajo es 70% ejecución/rutina, mover eso a Sonnet/Haiku ahorra ~40-60% del gasto total. El error inverso (todo en barato) cuesta en retrabajos — por eso Gearbox también recomienda **subir**.
-</details>
+| Documento | Qué contiene |
+|---|---|
+| [docs/GEARBOX-EV6-MULTI-MOTOR.md](docs/GEARBOX-EV6-MULTI-MOTOR.md) | **El documento técnico completo**: arquitectura, guía de replicación paso a paso, contrato de enrolamiento, caso real del primer día, fricciones y controles |
+| [README-viejo.md](README-viejo.md) | README clásico del skill Gearbox para Claude Code (V2): instalación, statusline, marchas con comandos, FAQ del skill |
+| [SKILL.md](SKILL.md) | El cerebro del skill: tabla de decisión, protocolo, calibración, model watch |
+| [EFICIENCIA.md](EFICIENCIA.md) | 8 prácticas de ahorro que funcionan con o sin el skill (sesiones, contexto, MCP, caché) |
 
-<details><summary><b>¿Qué es opusplan?</b></summary>
+## 🤝 Contribuir / reportar resultados
 
-Un alias oficial de Claude Code: usa Opus durante el modo plan (razonamiento/arquitectura) y cambia automáticamente a Sonnet al ejecutar. El arquitecto diseña, los albañiles construyen — y no pagas al arquitecto por poner ladrillos. Actívalo con `/model opusplan`.
-</details>
+La forma más útil de mejorar Gearbox EV6 no es afirmar que un motor "gana", sino **publicar resultados reproducibles**. Replica el sistema con tus propias cuentas y comparte lo que midas:
 
-<details><summary><b>¿Qué es ultrathink?</b></summary>
+- **[Abre un issue](https://github.com/GabrielMarquez01/gearbox-skill/issues)** con tu réplica usando la [plantilla sugerida](docs/GEARBOX-EV6-MULTI-MOTOR.md#10-invitación-a-la-comunidad): entorno, motores y versiones, aprobaciones/retrabajos/rechazos, hallazgos reales del auditor, falsos positivos, costo confirmado o desconocido, y cómo funcionó la sucesión.
+- **[Manda un PR](https://github.com/GabrielMarquez01/gearbox-skill/pulls)** si tienes una calibración con evidencia, un port o una traducción.
+- **⭐ Dale una estrella** si lo probaste y te fue útil — es la señal más simple de que vale la pena seguir iterándolo.
+- **Watch → Releases only** si quieres recibir solo las iteraciones importantes, con notas de qué cambió y por qué.
 
-Una palabra clave: escríbela en cualquier prompt y ese turno razona más profundo, sin cambiar modelo ni configuración. Perfecta para UNA pregunta difícil aislada — la marcha G3.5.
-</details>
+> [!IMPORTANT]
+> No publiques: tokens, cookies, archivos de sesión, prompts con información privada, nombres de clientes, datos financieros, expedientes legales o fiscales, rutas privadas de tu equipo, ni capturas que revelen cuentas o credenciales.
 
-<details><summary><b>¿No tengo acceso a Fable 5, se rompe algo?</b></summary>
+## 📄 Licencia
 
-No. G5 es una recomendación con comando — si no tienes acceso, el picker no lo mostrará y usas Opus (G4). El alias `best` resuelve esto solo.
-</details>
-
-<details><summary><b>El statusline azul no aparece</b></summary>
-
-1. Reinicia Claude Code (la configuración carga al inicio). 2. Verifica que `~/.claude/settings.json` tenga el bloque `statusLine`. 3. Prueba el script a mano: `echo '{"model":{"display_name":"Test"}}' | bash ~/.claude/gearbox/statusline.sh` — debe imprimir la línea azul.
-</details>
-
-<details><summary><b>¿El instalador rompe mi settings.json?</b></summary>
-
-No: hace **merge** (preserva tus hooks, permisos y preferencias) y guarda backup en `settings.json.backup-gearbox`. Si ya tenías `model` configurado, lo respeta.
-</details>
-
-<details><summary><b>¿Windows / WSL / macOS / Linux?</b></summary>
-
-WSL, macOS y Linux: soportado (bash + sed + python3, presentes por defecto). Windows nativo (PowerShell): los scripts requieren Git Bash o WSL.
-</details>
-
-<details><summary><b>¿Y cuando salgan modelos nuevos?</b></summary>
-
-Dos niveles: (1) versiones nuevas — Gearbox usa **alias** (`sonnet`, `opus`, `haiku`, `fable`), que Anthropic apunta siempre a la última versión, cero mantenimiento; (2) categorías nuevas — el protocolo incluye un *model watch* mensual: Gearbox consulta la página oficial de modelos y te propone integrar lo nuevo a la tabla, con tu aprobación.
-</details>
-
-<details><summary><b>¿Cómo se calibra con mis datos?</b></summary>
-
-Cada clasificación se registra en `~/.claude/gearbox/decisions.jsonl` (con el comando `log.sh decision`, separado de `events.jsonl` que solo registra cambios de estado). Con ≥10 decisiones acumuladas para un skill, Gearbox propone su nivel de esfuerzo (frontmatter `effort:`) con la evidencia de cada una. Nada cambia sin tu OK.
-</details>
-
-<details><summary><b>¿Cómo desinstalo?</b></summary>
-
-```bash
-rm -rf ~/.claude/gearbox ~/.claude/skills/gearbox
-mv ~/.claude/settings.json.backup-gearbox ~/.claude/settings.json
-# y borra la sección "## Gearbox" de ~/.claude/CLAUDE.md
-```
-</details>
-
-## 📦 Instalación manual
-
-```bash
-git clone https://github.com/GabrielMarquez01/gearbox-skill.git
-cd gearbox-skill
-bash install.sh
-```
-
-O a mano: `SKILL.md` → `~/.claude/skills/gearbox/` · `statusline.sh` y `reset.sh` → `~/.claude/gearbox/` (con `chmod +x`) · registra `statusLine` y el hook `SessionStart` en `~/.claude/settings.json` · agrega la directiva Gearbox a `~/.claude/CLAUDE.md` (ver [install.sh](install.sh) como referencia exacta).
-
-## 🗺️ Estructura
-
-```
-~/.claude/skills/gearbox/SKILL.md   ← el cerebro: tabla, protocolo, calibración, model watch
-~/.claude/gearbox/statusline.sh     ← indicador azul (bash+sed puro)
-~/.claude/gearbox/reset.sh          ← hook SessionStart → marcha default
-~/.claude/gearbox/set.sh            ← ancla una marcha (gear/task/effort/model)
-~/.claude/gearbox/log.sh            ← escribe la bitácora (events.jsonl / decisions.jsonl)
-~/.claude/gearbox/state.json        ← marcha activa
-~/.claude/gearbox/events.jsonl      ← set/reset — sin valor de calibración
-~/.claude/gearbox/decisions.jsonl   ← bitácora de calibración (el dato que importa)
-~/.claude/gearbox/log.jsonl.v1      ← archivo histórico pre-v3 (no borrar)
-~/.claude/gearbox/watch.json        ← fecha del último Model Watch (opcional, no lo toca reset.sh)
-```
-
-## 🤝 Contribuir y dar retroalimentación
-
-**¿Te funcionó? ¿No te funcionó? Queremos saberlo.**
-
-La próxima iteración del Gearbox se construye con evidencia real de la comunidad, no con suposiciones. Tres formas de participar:
-
-- **⭐ Dale una estrella** si lo instalaste y te fue útil — es la señal más simple de que vale la pena seguir mejorándolo.
-- **[Abre un issue](https://github.com/GabrielMarquez01/gearbox-skill/issues)** si encontraste un caso donde la recomendación estuvo mal, el statusline mintió, o hay una marcha que falta. Un caso real con contexto vale más que diez sugerencias abstractas.
-- **[Manda un PR](https://github.com/GabrielMarquez01/gearbox-skill/pulls)** si tienes una calibración con evidencia, un port (PowerShell, Fish), o una traducción.
-
-**¿Quieres recibir las actualizaciones?**
-Dale **Watch → Releases only** al repo (botón arriba a la derecha). Cada iteración importante sale como release con notas de qué cambió y por qué — sin spam, solo cuando hay algo concreto.
-
-> El Gearbox se itera igual que funciona: usar → medir con datos reales → mejorar solo lo que la evidencia señala.
-
-## Licencia
-
-[MIT](LICENSE) — Gabriel Marquez / [OpenGravity](https://github.com/GabrielMarquez01/OpenGravity), 2026.
+[MIT](LICENSE) — Gabriel Marquez / OpenGravity, 2026.
 
 ---
 
-<div align="center"><sub>⚙ <b>Gearbox</b> — evolución del Gearbox Protocol de OpenGravity · usar → medir → calibrar</sub></div>
+<div align="center">
+
+> *Si se separan los roles, se conserva la trazabilidad y se mide el resultado, un equipo multi-motor puede detectar errores diferentes, resistir mejor el agotamiento de cupos y reducir la dependencia de un solo proveedor.*
+
+<sub>⚙ <b>Gearbox</b> · usar → medir → calibrar · Documentado en equipo multi-motor: redacción <b>Codex</b> · coordinación <b>Claude</b> · tercer motor <b>Antigravity</b> · autoridad final: <b>el operador humano</b></sub>
+
+<sub>Actualizado: 2026-07-15 22:56</sub>
+
+</div>
