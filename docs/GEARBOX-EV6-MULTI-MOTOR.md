@@ -1,6 +1,12 @@
 # Gearbox EV6 — Torre de Control para equipos de IA multi-motor
 
+![Gearbox EV6 — Torre de Control multi-motor](./assets/gearbox-ev6-banner.png)
+
 > Documentación comunitaria para replicar el sistema con cuentas propias, sesiones independientes y auditoría entre proveedores.
+
+<p align="center">
+  <img src="./assets/gearbox-ev6-logo.png" alt="Logo Gearbox EV6" width="360">
+</p>
 
 ## Executive summary
 
