@@ -27,11 +27,56 @@ description: >-
 | **G2 Ejecución** (default) | features con contrato claro, UI, DB, fixes, deploys | Sonnet · high | default de sesión | base $3/$15 por M tokens |
 | **G3 Planeación híbrida** | PRPs, features grandes multi-fase | opusplan | recomendar `/model opusplan` (Opus planea → Sonnet ejecuta, cambio automático) | Opus solo al planear |
 | **G3.5 Turno profundo** | UNA pregunta difícil aislada | ultrathink | escribir `ultrathink` en el prompt (sin cambiar nada) | $0 de cambio |
-| **G4 Crítico** | seguridad/PII, producción caída, debugging multi-sistema | Opus · high | recomendar `/model opus` | ≈1.7× Sonnet estándar (2.5× con intro), se paga si evita retrabajo |
-| **G5 Arquitectura** | blueprint de ecosistema, infraestructura, decisiones multi-repo, 1M contexto | Fable (sesión dedicada) | recomendar `/model fable` o `claude --model fable` + GATE de costo | 2x Opus ($10/$50) — siempre con aprobación humana |
+| **G4 Crítico** | seguridad/PII, producción caída, debugging multi-sistema | Opus · **xhigh** | recomendar `/model opus` + `/effort xhigh` | ≈1.7× Sonnet estándar, se paga solo si evita retrabajo. **Este gate sube, nunca baja** |
+| **G5 Arquitectura** | blueprint de ecosistema, infraestructura, decisiones multi-repo, 1M contexto | **Opus · xhigh** por defecto; Fable solo por gate | Opus cubre hoy la mayor parte de esta franja; para Fable ver §Candado de costo | Opus 1.7× vs Fable 3.3× — **misma ventana de 1M a la mitad del precio** |
 
-Precios de referencia (2026-07): Haiku 4.5 $1/$5 · Sonnet estándar $3/$15 (Sonnet 5 tiene intro $2/$10 hasta 2026-08-31 donde aplique) · Opus 4.8 $5/$25 · Fable 5 $10/$50 (por M tokens in/out).
+Precios de referencia (verificados 2026-07-25): Haiku 4.5 $1/$5 · Sonnet 5 $3/$15 (intro $2/$10 hasta 2026-08-31 donde aplique) · **Opus 5 $5/$25** (sucede a Opus 4.8 al mismo precio; el alias `opus` hereda la versión nueva) · Fable 5 $10/$50 (por M tokens in/out).
+
+> **Antes de aplicar la tabla, verifica qué incluye tu plan.** Si tu suscripción ya cubre el nivel Opus sin costo marginal y Fable se paga aparte por consumo, la comparación deja de ser «1.7× vs 3.3×» y pasa a ser **«incluido vs dinero nuevo»**. Eso cambia casi todas las decisiones de la franja alta.
 Usar siempre **alias** (`haiku`, `sonnet`, `opus`, `fable`), nunca versiones fijas — los alias heredan versiones nuevas automáticamente.
+
+---
+
+## La escalera de esfuerzo (la palanca más subestimada)
+
+Los modelos actuales aceptan un ajuste de **esfuerzo**: cuánto piensan antes de responder. Mueve el
+gasto más que cambiar de modelo, y casi nadie lo toca. Desde Opus 5 la escalera tiene cinco peldaños.
+
+| Esfuerzo | Equivale a | Cuándo | Nota |
+|---|---|---|---|
+| `low` | "mírame esto rápido" | consultas cortas, no sensibles a inteligencia | **rinde mucho mejor que en generaciones previas** — vuelve a probarlo aunque te decepcionara antes |
+| `medium` | "dedícale un rato" | **trabajo operativo del día**: revisar estado, logs, chequeos | aquí está el ahorro grande de la mayoría de las flotas |
+| `high` | "piénsalo bien" | trabajo sensible a la inteligencia | **es el valor por defecto** si no configuras nada |
+| `xhigh` | "tómate la tarde" | **código y carriles agénticos largos** | el mejor ajuste para esos casos |
+| `max` | "tómate el día" | cuando errar cuesta más que el gasto | puede sobrepensar tareas simples — mide antes de fijarlo |
+
+**Regla de oro actualizada:** la marcha más baja que entregue resultado confiable — pero medida
+contra el modelo que estás usando hoy, no contra el anterior. **Barre `medium → high → xhigh` sobre
+tareas reales antes de fijar un default.** Los valores heredados de otra generación casi nunca
+transfieren bien.
+
+**Contraintuitivo pero medido:** en trabajo agéntico, subir el esfuerzo a `xhigh` suele **bajar el
+gasto total**. Gasta más por turno y necesita menos turnos, con menos retrabajo.
+
+### Trampas al estrenar un modelo nuevo
+
+Cada generación cambia comportamientos que no vienen en la nota de lanzamiento. Revisa siempre:
+
+- **¿Piensa por defecto?** Si antes había que pedírselo y ahora no, tu gasto de salida sube solo y
+  las respuestas pueden truncarse si tenías el límite de salida ajustado al ras.
+- **Combinaciones prohibidas.** En Opus 5, desactivar el pensamiento con esfuerzo `xhigh` o `max`
+  devuelve error. Se valida **por petición**, no por conversación.
+- **Borra tus instrucciones de "verifica tu trabajo".** Los modelos nuevos se autoverifican; pedirlo
+  genera trabajo duplicado que pagas. Invierte una buena práctica de siempre — revísalo, no lo asumas.
+- **Vigila cuánto delega.** La tendencia a lanzar subagentes cambia entre versiones, en ambas
+  direcciones. Pon tope explícito en el prompt del carril.
+- **Escribe más largo** (respuestas y archivos). Bajar el esfuerzo **no** acorta la salida de forma
+  confiable — se corrige con instrucción explícita de concisión.
+- **Puede ampliar el alcance** de lo pedido. Pide disciplina de alcance por escrito.
+- **Los límites de uso suelen ser bolsa aparte.** Mover tráfico a un modelo nuevo normalmente no
+  consume ni hereda la cuota del anterior. Confírmalo antes de planear volumen.
+- **El mínimo de caché puede cambiar.** En Opus 5 baja a 512 tokens (antes 1024): prompts cortos que
+  no cacheaban, ahora sí — ahorro gratis sin tocar código.
 
 ---
 
@@ -70,6 +115,58 @@ Reglas del bloque:
 | opusplan: Opus al planear → Sonnet al ejecutar | Harness, automático (si `/model opusplan` activo) |
 | Cambiar el modelo principal de la sesión | Humano — Claude da el comando exacto |
 | Sesión Fable (G5) | Humano — SIEMPRE gate de costo explícito |
+
+---
+
+## Candado de costo — el modelo de frontera nunca en frío
+
+> La regla que más dinero ahorra no es técnica, es de gobierno: **nadie —persona o asistente— puede
+> proponer el modelo más caro sin poner el precio enfrente.** Una recomendación del modelo de
+> frontera sin presupuesto estimado es una recomendación inválida y debe rechazarse.
+
+**Primero corre el nivel Opus.** Solo se escala a Fable si Opus falló **de forma demostrable**, con
+evidencia de en qué falló. Escalar por corazonada es gasto injustificado.
+
+### Bloque obligatorio antes de convocar Fable
+
+```text
+💰 GATE DE COSTO — MODELO DE FRONTERA
+Actividad:      qué exactamente, delimitado (no "arquitectura" — qué documento sobre qué)
+Por qué éste:   la razón concreta que el nivel Opus no cubre
+Presupuesto:    $X – $Y   (rango honesto, nunca una promesa)
+TOPE DURO:      $Z — al llegar, la sesión SE DETIENE y reporta; no pide más a media obra
+Alternativa:    Opus · xhigh → cubre ~N% de esto
+Autorización:   "aprobado hasta $Z"
+```
+
+### Topes duros sugeridos
+
+| Convocatoria | Alcance | Estimado típico | **Tope duro** |
+|---|---|---|---|
+| Turno puntual | UNA pregunta difícil, contexto acotado | $1 – $3 | **$5** |
+| Sesión acotada | Un documento / una decisión, fuentes cerradas | $4 – $9 | **$15** |
+| Trabajo mayor | Multi-repo, multi-hora, varios entregables | $15 – $40 | **$40** + checkpoint a mitad |
+
+### Cómo estimar sin calculadora
+
+A $10/$50 por millón (entrada/salida), con 1 palabra ≈ 1.3 tokens:
+
+- cada **~100 000 palabras leídas ≈ $1.30**
+- cada **~20 000 palabras pensadas o escritas ≈ $1.30**
+
+> ⚠️ **Pensar cuesta 5× más que leer.** En Fable el razonamiento **no se puede apagar** y se factura
+> como salida. El costo no escala con cuánto material le des a leer, sino con **cuánto tiempo lo dejes
+> deliberando** — por eso las sesiones largas son las que se disparan.
+
+### Planeación previa obligatoria
+
+Todo gate llega **ya planeado**, nunca como sesión abierta sin rumbo:
+
+1. **Entregable declarado** — qué documento o decisión concreta sale. Sin entregable, no hay gate.
+2. **Fuentes acotadas** — la lista exacta de repos/documentos, cerrada de antemano. Leer "lo que haga
+   falta" es como se revientan los presupuestos.
+3. **Criterio de terminado** — cómo se sabrá que ya está, para no deliberar de más.
+4. **Qué queda para después** — Fable entrega el plano; la ejecución es trabajo de Opus/Sonnet.
 
 ---
 
@@ -266,6 +363,24 @@ Skills ya calibradas por naturaleza obvia (no requieren datos):
 ---
 
 ## Model Watch (revisión mensual)
+
+### Registro — 2026-07-25 · Opus 5
+
+**Qué cambió:** Opus 5 (`claude-opus-5`) sucede a Opus 4.8 **al mismo precio** ($5/$25); el alias
+`opus` hereda la versión nueva, así que ningún comando cambia. Lo que sí cambió son las **reglas del
+motor**: (1) el pensamiento viene **encendido por defecto** — omitir el parámetro ya no lo apaga;
+(2) apagarlo con esfuerzo `xhigh`/`max` devuelve error; (3) `low` y `medium` rinden inusualmente
+bien, lo que convierte a `effort` en la palanca principal de costo; (4) `xhigh` es el mejor ajuste
+para código y trabajo agéntico; (5) el mínimo de caché baja a 512 tokens; (6) los límites de uso son
+bolsa separada de la generación anterior.
+
+**Qué NO cambió:** precio, ventana de contexto, salida máxima y los multiplicadores de esta tabla.
+
+**Decisión de flota:** rutina baja a `medium`; código y análisis multi-fuente suben a `xhigh`; **Opus
+· xhigh sustituye a Fable como default** en análisis multi-fuente (misma ventana de 1M, mitad de
+precio). Los gates de seguridad, PII y dinero **suben** a `xhigh` — el ahorro sale de la rutina,
+nunca de los candados. Ver §La escalera de esfuerzo y §Candado de costo.
+
 
 La fecha de última revisión vive en `~/.claude/gearbox/watch.json` (`{"last_watch":"YYYY-MM-DD"}`)
 — un archivo propio que ningún `reset.sh` toca (a diferencia de `state.json`, que se reescribe
