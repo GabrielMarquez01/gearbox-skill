@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" role="img" aria-labelledby="t d">
+  <title id="t">La escalera de esfuerzo — Gearbox, actualización Opus 5</title>
+  <desc id="d">Cinco niveles de esfuerzo (low, medium, high, xhigh, max) con su uso recomendado. El costo real no lo decide solo el modelo: lo decide cuánto se le deja pensar.</desc>
+
+  <defs>
+    <style>
+      .bg    { fill: #F2F4F3; }
+      .panel { fill: #E7EBEA; }
+      .ink   { fill: #16242B; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .soft  { fill: #44575E; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      .faint { fill: #7E9098; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+      .mono  { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+      .h1    { font-size: 30px; font-weight: 800; letter-spacing: -0.6px; }
+      .h2    { font-size: 13px; font-weight: 600; letter-spacing: 2.2px; }
+      .lvl   { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
+      .quote { font-size: 15px; font-style: italic; }
+      .use   { font-size: 12.5px; letter-spacing: 0.3px; }
+      .note  { font-size: 13.5px; }
+      .rule  { stroke: #CBD5D4; stroke-width: 1; }
+      .on    { fill: #0B6E7F; }
+      .off   { fill: #CBD5D4; }
+      .accentbar { fill: #0B6E7F; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="960" height="600"/>
+
+  <!-- encabezado -->
+  <text class="faint h2" x="48" y="52">GEARBOX · ACTUALIZACIÓN OPUS 5 · 2026-07</text>
+  <text class="ink h1" x="48" y="92">La escalera de esfuerzo</text>
+  <rect class="accentbar" x="48" y="108" width="64" height="3"/>
+  <text class="soft note" x="48" y="140">El costo no lo decide solo el modelo. Lo decide <tspan font-weight="700">cuánto lo dejas pensar</tspan> — y casi nadie toca esa palanca.</text>
+
+  <!-- fila: low -->
+  <rect class="panel" x="48" y="168" width="864" height="60"/>
+  <rect x="48" y="168" width="3" height="60" fill="#CBD5D4"/>
+  <text class="ink lvl mono" x="72" y="193">low</text>
+  <g transform="translate(72,204)">
+    <rect class="on"  x="0"  y="0" width="10" height="14"/>
+    <rect class="off" x="14" y="0" width="10" height="14"/>
+    <rect class="off" x="28" y="0" width="10" height="14"/>
+    <rect class="off" x="42" y="0" width="10" height="14"/>
+    <rect class="off" x="56" y="0" width="10" height="14"/>
+  </g>
+  <text class="ink quote" x="200" y="193">«Mírame esto rápido»</text>
+  <text class="soft use" x="200" y="213">Consultas cortas · lecturas · formateo</text>
+  <text class="faint use" x="600" y="203">rinde mucho mejor que en generaciones previas</text>
+
+  <!-- fila: medium -->
+  <rect class="panel" x="48" y="232" width="864" height="60"/>
+  <rect x="48" y="232" width="3" height="60" fill="#CBD5D4"/>
+  <text class="ink lvl mono" x="72" y="257">medium</text>
+  <g transform="translate(72,268)">
+    <rect class="on"  x="0"  y="0" width="10" height="14"/>
+    <rect class="on"  x="14" y="0" width="10" height="14"/>
+    <rect class="off" x="28" y="0" width="10" height="14"/>
+    <rect class="off" x="42" y="0" width="10" height="14"/>
+    <rect class="off" x="56" y="0" width="10" height="14"/>
+  </g>
+  <text class="ink quote" x="200" y="257">«Dedícale un rato»</text>
+  <text class="soft use" x="200" y="277">Trabajo operativo del día · revisar estado · chequeos</text>
+  <text class="faint use" x="600" y="267">aquí está el ahorro grande de casi toda flota</text>
+
+  <!-- fila: high -->
+  <rect class="panel" x="48" y="296" width="864" height="60"/>
+  <rect x="48" y="296" width="3" height="60" fill="#CBD5D4"/>
+  <text class="ink lvl mono" x="72" y="321">high</text>
+  <g transform="translate(72,332)">
+    <rect class="on"  x="0"  y="0" width="10" height="14"/>
+    <rect class="on"  x="14" y="0" width="10" height="14"/>
+    <rect class="on"  x="28" y="0" width="10" height="14"/>
+    <rect class="off" x="42" y="0" width="10" height="14"/>
+    <rect class="off" x="56" y="0" width="10" height="14"/>
+  </g>
+  <text class="ink quote" x="200" y="321">«Piénsalo bien»</text>
+  <text class="soft use" x="200" y="341">Especificaciones · decisiones con matices · análisis</text>
+  <text class="faint use" x="600" y="331">es el valor por defecto si no configuras nada</text>
+
+  <!-- fila: xhigh (destacada) -->
+  <rect class="panel" x="48" y="360" width="864" height="60"/>
+  <rect x="48" y="360" width="3" height="60" fill="#0B6E7F"/>
+  <text class="ink lvl mono" x="72" y="385">xhigh</text>
+  <g transform="translate(72,396)">
+    <rect class="on" x="0"  y="0" width="10" height="14"/>
+    <rect class="on" x="14" y="0" width="10" height="14"/>
+    <rect class="on" x="28" y="0" width="10" height="14"/>
+    <rect class="on" x="42" y="0" width="10" height="14"/>
+    <rect class="off" x="56" y="0" width="10" height="14"/>
+  </g>
+  <text class="ink quote" x="200" y="385">«Tómate la tarde»</text>
+  <text class="soft use" x="200" y="405">Código · carriles agénticos largos · auditoría crítica</text>
+  <text class="faint use" x="600" y="395">el mejor ajuste para esos casos</text>
+
+  <!-- fila: max -->
+  <rect class="panel" x="48" y="424" width="864" height="60"/>
+  <rect x="48" y="424" width="3" height="60" fill="#0B6E7F"/>
+  <text class="ink lvl mono" x="72" y="449">max</text>
+  <g transform="translate(72,460)">
+    <rect class="on" x="0"  y="0" width="10" height="14"/>
+    <rect class="on" x="14" y="0" width="10" height="14"/>
+    <rect class="on" x="28" y="0" width="10" height="14"/>
+    <rect class="on" x="42" y="0" width="10" height="14"/>
+    <rect class="on" x="56" y="0" width="10" height="14"/>
+  </g>
+  <text class="ink quote" x="200" y="449">«Tómate el día»</text>
+  <text class="soft use" x="200" y="469">Cuando errar cuesta más que el gasto</text>
+  <text class="faint use" x="600" y="459">puede sobrepensar tareas simples — mide antes</text>
+
+  <!-- nota inferior -->
+  <line class="rule" x1="48" y1="516" x2="912" y2="516"/>
+  <text class="soft note" x="48" y="546"><tspan class="ink" font-weight="700">Contraintuitivo pero medido:</tspan><tspan> en trabajo agéntico, subir a </tspan><tspan class="mono" font-weight="700" fill="#0B6E7F">xhigh</tspan><tspan> suele </tspan><tspan font-weight="700">bajar el gasto total</tspan><tspan>.</tspan></text>
+  <text class="soft note" x="48" y="568">Gasta más por turno y necesita menos turnos, con menos retrabajo.</text>
+  <text class="faint use" x="912" y="568" text-anchor="end">github.com/GabrielMarquez01/gearbox-skill · MIT</text>
+</svg>

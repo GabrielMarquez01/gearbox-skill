@@ -26,6 +26,7 @@ Esto es **infraestructura temprana y honesta**: no comparte cuentas ni sesiones 
 - [Quick Start](#-quick-start)
 - [Cómo se organiza la flota](#-cómo-se-organiza-la-flota)
 - [Las marchas G0–G5](#-las-marchas-g0g5)
+- [¿Cuánto rinde? — con y sin Gearbox](#-cuánto-rinde--la-misma-cuenta-con-y-sin-gearbox) *(actualización Opus 5)*
 - [Comparativa de motores](#-comparativa-de-motores) *(colapsable)*
 - [FAQ](#-faq) *(colapsable)*
 - [Documentación](#-documentación)
@@ -118,6 +119,78 @@ Cada tarea se clasifica en **dos ejes**: `marcha de esfuerzo × motor asignado`.
 > **Regla de oro:** usa la marcha más baja que entregue resultado confiable, y sube solo cuando el riesgo, dinero o complejidad lo justifique. Para dinero, legal, fiscal o datos personales, la eficiencia **nunca** elimina la revisión cruzada ni la aprobación humana.
 
 La implementación concreta para Claude Code (comandos `/model` y `/effort`, statusline, multiplicadores de costo) está en el [README clásico del skill](README-viejo.md) y en [SKILL.md](SKILL.md).
+
+---
+
+## 💸 ¿Cuánto rinde? — la misma cuenta, con y sin Gearbox
+
+> **Actualización Opus 5 (2026-07):** Opus 5 llega al mismo precio que su antecesor, pero cambió lo
+> que más pesa en la factura — el **esfuerzo**. `low` y `medium` rinden ahora inusualmente bien, y
+> `xhigh` es el mejor ajuste para código. Eso convierte al esfuerzo en **la palanca principal de
+> costo**, no en un ajuste fino.
+
+![La escalera de esfuerzo — cinco niveles, de «mírame esto rápido» a «tómate el día»](docs/assets/escalera-esfuerzo-opus5.svg)
+
+### El experimento: $100 USD de saldo
+
+La pregunta honesta que todo el mundo se hace: *si Opus 5 es tan bueno, ¿por qué no correr todo en
+Opus 5 y ya?* Aquí está la respuesta en dinero.
+
+**Supuestos** (declarados para que puedas rehacer el cálculo con los tuyos): tarea unitaria de
+**20 000 tokens de entrada**; salida —razonamiento incluido— de **1 k** en `low`, **3 k** en
+`medium`, **6 k** en `high` y **12 k** en `xhigh`; tarifas estándar de lista.
+
+| Estrategia | Costo por tarea | **Tareas con $100** |
+|---|---:|---:|
+| Todo en el modelo de frontera · `high` | $0.500 | **200** |
+| **Todo en Opus 5 · `high`** *(el "no pienses, usa el mejor")* | $0.250 | **400** |
+| **Con Gearbox** *(mezcla por marcha)* | $0.115 | **871** |
+
+**Mismo dinero, 2.2× más trabajo.** No porque el Gearbox use modelos peores — sino porque deja de
+pagar precio de razonamiento profundo para tareas que no lo necesitan.
+
+<details>
+<summary>Ver la mezcla usada y el desglose</summary>
+
+| Marcha | % del trabajo | Configuración | Costo/tarea |
+|---|---:|---|---:|
+| G0 · mecánico | 40% | Haiku · `low` | $0.025 |
+| G1–G2 · operativo | 35% | Sonnet · `medium` | $0.105 |
+| G2–G3 · construcción | 20% | Sonnet · `xhigh` | $0.240 |
+| G4 · crítico | 5% | Opus · `xhigh` | $0.400 |
+
+Promedio ponderado: **$0.115 por tarea**.
+
+**¿Y si el modelo barato se equivoca?** Es la objeción correcta. Supongamos que **una de cada cinco**
+tareas mecánicas sale mal y hay que rehacerla en Sonnet: el promedio sube a $0.123 y todavía rinden
+**812 tareas** — sigue siendo **2×**. El margen aguanta bastante error antes de desaparecer.
+
+</details>
+
+### Cuatro escenarios reales
+
+**1 · Operación con mucho trabajo mecánico** — buscar en archivos, leer logs, renombrar, clasificar,
+formatear. *El Gearbox gana en grande:* ese trabajo cuesta 10× menos en el modelo ligero y **el
+resultado es idéntico**. Aquí es donde aparece la mayor parte del 2.2×.
+
+**2 · Taller de código pesado** — casi todo es construcción compleja que necesita `xhigh` de todas
+formas. *El Gearbox gana poco en dinero… y mucho en calidad:* su aporte aquí no es abaratar, es
+decirte que **subas** a `xhigh` en vez de quedarte en el default. Menos turnos, menos retrabajo.
+
+**3 · Auditoría de dinero, seguridad o datos personales** — *aquí el Gearbox te hace gastar MÁS a
+propósito*, y ésa es la ganancia. Un cobro mal calculado o una fuga de datos cuesta más que la
+cuenta entera del mes. **Los gates suben; nunca bajan para ahorrar.**
+
+**4 · Uso esporádico** — si haces diez tareas al mes, la disciplina no te va a devolver el tiempo
+que inviertes en aplicarla. *Usa el mejor modelo y sigue con tu vida.* El Gearbox rinde cuando hay
+volumen o cuando hay riesgo — si no tienes ninguno de los dos, no lo necesitas.
+
+### Si tu plan ya incluye el modelo
+
+Con suscripción, el ahorro **no llega como factura más baja: llega como más trabajo antes de topar
+tu límite**. La aritmética es la misma y la conclusión también — pero se siente distinto: no ves
+dinero de vuelta, ves que **dejas de quedarte sin cupo a media tarde**.
+
 
 ## ⚖️ Comparativa de motores
 
