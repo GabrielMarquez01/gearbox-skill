@@ -49,13 +49,28 @@ considera G0–G2. G4/G5 mantienen gate humano.
 
 ## Privacidad
 
-Por defecto no se almacena el prompt. Se guarda:
+No se almacena el prompt **ni un hash del prompt**. Lo que se guarda en la base
+local es:
 
-- SHA-256 del prompt;
-- número de caracteres;
-- proyecto/cwd;
-- clasificación y predicción;
+- número de caracteres del prompt (un entero);
+- `project_ref` y `session_ref`: seudónimos HMAC-SHA256 con una **sal local
+  aleatoria** que nunca sale del equipo — sirven para agrupar trabajo del mismo
+  proyecto sin guardar la ruta, y no son correlacionables entre instalaciones;
+- clasificación y predicción (marcha, modelo, esfuerzo, riesgo, confianza);
 - feedback posterior.
+
+> **Cambio respecto al preview anterior.** Las primeras versiones guardaban
+> `SHA-256(prompt)`, `cwd` y `session_id` en claro. Un hash de prompt es
+> reversible por diccionario para prompts cortos y correlacionable entre
+> equipos, así que dejó de escribirse. Para limpiar una base heredada:
+>
+> ```bash
+> ~/.claude/gearbox/gearbox.py privacy scrub-local
+> ```
+
+Nada de esto se transmite en modo `local`, que es el predeterminado. La
+telemetría opcional se documenta en [TELEMETRY.md](../TELEMETRY.md) y va por
+un camino distinto: bandas y enums, nunca estos campos.
 
 ## Compatibilidad
 

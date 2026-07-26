@@ -259,10 +259,92 @@ El instalador copia los archivos del skill a `~/.claude`, crea backup de `settin
 Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o el modo guardia conserva operaciones limitadas (continuar trabajos ya especificados, documentar avances, informar al humano) sin heredar los poderes del titular. Por eso cada tarea lleva una [especificación mínima](docs/GEARBOX-EV6-MULTI-MOTOR.md#410-especificación-mínima-de-una-tarea) que otro motor pueda retomar.
 </details>
 
+## 🎁 Gratis y mejorado por la comunidad
+
+Gearbox es software gratuito bajo licencia MIT y **puede funcionar completamente
+en local**. Su *Community Learning Program* mejora las recomendaciones usando
+métricas anónimas y agregadas aportadas voluntariamente por quienes lo usan.
+Antes de enviar, Gearbox minimiza los datos, elimina identificadores, escanea
+secretos, te deja revisar la cápsula y exige tu consentimiento. **Nunca envía
+prompts, respuestas, código, archivos, nombres de proyectos ni credenciales.**
+Quien no desee contribuir puede usar el modo local o un colector autoalojado.
+
+La licencia **no** está condicionada a enviar datos.
+
+```text
+Tu equipo
+  ↓ métricas locales
+Sanitizador  (elimina identificadores · generaliza a bandas · escanea secretos)
+  ↓
+Vista previa y consentimiento     ← aquí decides tú
+  ↓ cápsula gzip
+Colector
+  ↓
+Agregación con umbral   (n ≥ 20 eventos y ≥ 5 contribuyentes distintos)
+  ↓
+Community Priors
+  ↓
+Mejores predicciones para la comunidad
+```
+
+### Lo que Gearbox nunca recopila
+
+prompts · respuestas · código · archivos · fragmentos de documentos · hashes de
+prompts · task_id locales · session_id · rutas · nombres de repositorio · rama ·
+commit · nombres de archivo · URLs · IP · correo · teléfono · hostname ·
+usuario · tokens · llaves API · secretos · cookies · texto libre · stack traces
+· marcas de tiempo exactas · geografía.
+
+Tampoco acepta —ni con consentimiento— datos de menores, salud, biometría,
+religión, origen étnico, ubicación precisa ni información financiera personal.
+
+### Cómo verificarlo tú mismo
+
+No hace falta creernos:
+
+```bash
+# Ver el texto exacto que saldría de tu equipo, antes de enviar nada
+~/.claude/gearbox/gearbox.py telemetry preview
+
+# Guardarlo y revisarlo con tus propias herramientas
+~/.claude/gearbox/gearbox.py telemetry export --out /tmp/capsula.json
+grep -iE 'prompt|path|home|token|@|http' /tmp/capsula.json    # no debe salir nada
+
+# Comprobar que el modo local NO abre ninguna conexión
+python3 -m unittest tests.test_compat_transport.LocalModeIsOfflineTests -v
+
+# Ver el estado completo: modo, consentimiento, cola, priors
+~/.claude/gearbox/gearbox.py telemetry status
+```
+
+Y para salir cuando quieras:
+
+```bash
+gearbox.py telemetry disable   # detener envíos
+gearbox.py telemetry purge     # vaciar la cola
+gearbox.py telemetry revoke    # revocar, borrar la cola y rotar el seudónimo
+```
+
+> **Estado honesto:** hoy **no existe** un colector público — no hay dominio,
+> endpoint ni token de ingesta. Lo que existe es una implementación de
+> referencia auto-alojable en [`collector/`](collector/README.md). En la
+> práctica, las opciones reales hoy son **local** y **self-hosted**.
+> Detalle completo en [TELEMETRY.md](TELEMETRY.md).
+
 ## 📚 Documentación
 
 | Documento | Qué contiene |
 |---|---|
+| [TELEMETRY.md](TELEMETRY.md) | Qué se envía, qué nunca, y cómo comprobarlo comando por comando |
+| [PRIVACY.md](PRIVACY.md) | Qué se guarda en tu equipo, marco legal verificado y límites honestos |
+| [COMMUNITY-LEARNING.md](COMMUNITY-LEARNING.md) | Cómo se agregan los datos y por qué una cohorte pequeña no se publica |
+| [MULTI-VENDOR-AUDIT.md](MULTI-VENDOR-AUDIT.md) | Revisión ciega, jerarquía de fuentes y las tres confianzas |
+| [SECURITY.md](SECURITY.md) | Controles implementados y lo que **no** está resuelto |
+| [THREAT-MODEL.md](THREAT-MODEL.md) | STRIDE completo con riesgo residual declarado |
+| [INCIDENT-RESPONSE.md](INCIDENT-RESPONSE.md) | 12 escenarios con procedimiento y comandos |
+| [DATA-GOVERNANCE.md](DATA-GOVERNANCE.md) | Inventario de datos, roles jurídicos y derechos |
+| [docs/CLAIMS-EVIDENCE-MATRIX.md](docs/CLAIMS-EVIDENCE-MATRIX.md) | Cada promesa → su prueba. Y las promesas que **no** se hacen |
+| [docs/legal/](docs/legal/) | Plantillas legales — **borradores, requieren abogado** |
 | [docs/GEARBOX-EV6-MULTI-MOTOR.md](docs/GEARBOX-EV6-MULTI-MOTOR.md) | **El documento técnico completo**: arquitectura, guía de replicación paso a paso, contrato de enrolamiento, caso real del primer día, fricciones y controles |
 | [README-viejo.md](README-viejo.md) | README clásico del skill Gearbox para Claude Code (V2): instalación, statusline, marchas con comandos, FAQ del skill |
 | [SKILL.md](SKILL.md) | El cerebro del skill: tabla de decisión, protocolo, calibración, model watch |
