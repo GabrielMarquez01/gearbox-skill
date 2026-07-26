@@ -1,7 +1,9 @@
 # Matriz de promesas y evidencia
 
-> **Actualizado: 2026-07-26** · 151 pruebas, todas pasando en Python 3.12 local.
-> Python 3.9 y 3.11 y macOS los verifica CI: **localmente sólo hubo 3.12**.
+> **Actualizado: 2026-07-26** · 151 pruebas, todas pasando.
+> Verificado en CI en **6 combinaciones**: Ubuntu y macOS × Python 3.9, 3.11 y
+> 3.12 ([run 30189667575](https://github.com/GabrielMarquez01/gearbox-skill/actions/runs/30189667575)).
+> Localmente sólo se ejecutó 3.12 sobre Linux/WSL.
 
 Regla de este documento: **nada se marca `verificado` por estar documentado.**
 Sólo cuenta si existe una prueba que fallaría si la promesa dejara de cumplirse.
@@ -175,5 +177,4 @@ Se listan porque callarlas sería el problema:
 | Que los CLIs de proveedores estén verificados | Los argumentos pueden envejecer; verificar contra la documentación oficial |
 | Releases firmados o con checksum | **pendiente-infra** |
 | Privacidad diferencial | **pendiente-infra**, documentada y no simulada |
-| Windows nativo | Soportado **vía WSL**; los scripts son bash |
-| Python 3.9/3.11 probados localmente | Sólo se ejecutó 3.12; el resto lo cubre CI |
+| Windows nativo probado | Los scripts son bash; en CI sólo se comprueba que WSL esté documentado, no se ejecuta PowerShell |
