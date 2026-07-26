@@ -10,6 +10,13 @@ import json
 import unittest
 from datetime import datetime, timedelta, timezone
 
+import sys as _sys
+from pathlib import Path as _Path
+# Permite invocar tanto `unittest discover -s tests` como
+# `unittest tests.test_x`: en el segundo caso este directorio no queda
+# en sys.path y `support` no se encontraría.
+_sys.path.insert(0, str(_Path(__file__).resolve().parent))
+
 from support import FAKE_SECRETS, IsolatedHome, load_core, sample_capsule
 
 from gearboxlib import capsule as gb_capsule

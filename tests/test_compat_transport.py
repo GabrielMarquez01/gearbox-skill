@@ -12,6 +12,13 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 
+import sys as _sys
+from pathlib import Path as _Path
+# Permite invocar tanto `unittest discover -s tests` como
+# `unittest tests.test_x`: en el segundo caso este directorio no queda
+# en sys.path y `support` no se encontraría.
+_sys.path.insert(0, str(_Path(__file__).resolve().parent))
+
 from support import ROOT, IsolatedHome, load_core, sample_capsule
 
 from gearboxlib import consent, outbox, transport
