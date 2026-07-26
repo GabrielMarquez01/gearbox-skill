@@ -267,6 +267,7 @@ Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o
 | [README-viejo.md](README-viejo.md) | README clásico del skill Gearbox para Claude Code (V2): instalación, statusline, marchas con comandos, FAQ del skill |
 | [SKILL.md](SKILL.md) | El cerebro del skill: tabla de decisión, protocolo, calibración, model watch |
 | [EFICIENCIA.md](EFICIENCIA.md) | 8 prácticas de ahorro que funcionan con o sin el skill (sesiones, contexto, MCP, caché) |
+| [guardian/README.md](guardian/README.md) | **Complemento opcional** (no se instala con el Gearbox): reabre la sesión si se cae, y cuando se agota el cupo anota dónde quedó y te avisa al renovarse |
 
 ## 🤝 Contribuir / reportar resultados
 
