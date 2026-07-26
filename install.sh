@@ -41,6 +41,14 @@ fi
 
 # Archivos principales. El núcleo Python se instala antes de los wrappers.
 fetch "gearbox.py"    "$GB_DIR/gearbox.py"
+
+# Biblioteca de soporte (privacidad, consentimiento, cola, transporte, priors).
+mkdir -p "$GB_DIR/gearboxlib"
+for module in __init__ paths privacy consent capsule outbox transport priors; do
+  fetch "gearboxlib/${module}.py" "$GB_DIR/gearboxlib/${module}.py"
+done
+chmod 700 "$GB_DIR/gearboxlib" 2>/dev/null || true
+
 fetch "statusline.sh" "$GB_DIR/statusline.sh"
 fetch "reset.sh"      "$GB_DIR/reset.sh"
 fetch "set.sh"        "$GB_DIR/set.sh"
@@ -156,6 +164,38 @@ text = text.rstrip() + "\n\n" + block + "\n"
 path.write_text(text, encoding="utf-8")
 print("  ✅ directiva global Gearbox V3 actualizada")
 PY
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Consentimiento de telemetría. Por defecto: LOCAL. Nada premarcado.
+# ─────────────────────────────────────────────────────────────────────────────
+python3 - "$GB_DIR" <<'PY'
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(sys.argv[1])))
+import os
+
+os.environ.setdefault("GEARBOX_HOME", sys.argv[1])
+from gearboxlib import consent   # noqa: E402
+
+record = consent.bootstrap_from_env()
+if record["status"] == "granted":
+    print(f"  ✅ telemetría {record['mode']} activada por variables de entorno explícitas")
+else:
+    print("  ✅ modo LOCAL: no se transmite nada (telemetría desactivada)")
+PY
+
+# En instalaciones interactivas se ofrece la elección, sin casillas premarcadas.
+if [ -t 0 ] && [ "${GEARBOX_NONINTERACTIVE:-0}" != "1" ]; then
+  echo ""
+  python3 "$GB_DIR/gearbox.py" telemetry explain 2>/dev/null | head -30 || true
+  echo ""
+  echo "  Selecciona:"
+  echo "   1. Local únicamente  (por defecto — ya está activo, no hagas nada)"
+  echo "   2. Community Learning:  $GB_DIR/gearbox.py telemetry enable community"
+  echo "   3. Colector propio:     $GB_DIR/gearbox.py telemetry enable self-hosted --endpoint https://..."
+  echo ""
+fi
 
 "$GB_DIR/reset.sh"
 "$GB_DIR/gearbox.py" doctor

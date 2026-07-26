@@ -65,7 +65,9 @@ PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (
     ("github_pat", re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}\b"), BLOCK),
     ("anthropic_key", re.compile(r"\bsk-ant-[A-Za-z0-9\-_]{16,}"), BLOCK),
     ("openai_key", re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9\-_]{20,}"), BLOCK),
-    ("google_api_key", re.compile(r"\bAIza[0-9A-Za-z\-_]{35}\b"), BLOCK),
+    # Una llave real de Google trae 35 caracteres tras "AIza"; el rango es más
+    # amplio a propósito: es preferible bloquear un parecido que dejar salir uno.
+    ("google_api_key", re.compile(r"\bAIza[0-9A-Za-z\-_]{28,45}"), BLOCK),
     ("slack_token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}"), BLOCK),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{4,}"), BLOCK),
     ("bearer_header", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9\-._~+/]{16,}"), BLOCK),
@@ -215,6 +217,7 @@ CAPSULE_FIELDS = frozenset({
 
 AGGREGATE_FIELDS = frozenset({"event_count"})
 
+MAX_EVENTS = 1000
 BAND_RE = re.compile(r"^(?:unknown|\d+(?:\.\d+)?-\d+(?:\.\d+)?|\d+\+)$")
 PERIOD_RE = re.compile(r"^\d{4}-W\d{2}$|^\d{4}-\d{2}-\d{2}$")
 
@@ -259,6 +262,11 @@ def validate_capsule(capsule: Any) -> list[str]:
     events = capsule.get("events")
     if not isinstance(events, list):
         errors.append("events debe ser una lista")
+        return errors
+    # Tope por CANTIDAD, no sólo por bytes: eventos repetidos comprimen tanto que
+    # una cápsula enorme cabe en pocos KiB y burlaría un límite de tamaño.
+    if len(events) > MAX_EVENTS:
+        errors.append(f"demasiados eventos ({len(events)} > {MAX_EVENTS})")
         return errors
 
     for index, event in enumerate(events):
