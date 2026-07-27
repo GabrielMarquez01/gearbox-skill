@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# guardian.conf — configuración del guardián de sesión (complemento opcional)
+#
+# Cópialo a  ~/.claude/guardian/guardian.conf  y edita sólo lo que necesites.
+# Todo tiene un valor por defecto razonable: puedes dejarlo casi vacío.
+#
+# ⚠️  Este archivo puede contener un token. Déjalo sólo para tu usuario:
+#        chmod 600 ~/.claude/guardian/guardian.conf
+#     Y no lo subas a ningún repositorio.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Canal de aviso ───────────────────────────────────────────────────────────
+# escritorio  notificación en la máquina (por defecto; no requiere nada más)
+# telegram    mensaje a tu celular  → llena TELEGRAM_TOKEN y TELEGRAM_CHAT
+# comando     delega el envío a un programa tuyo → llena AVISO_COMANDO
+CANAL_AVISO='escritorio'
+
+# --- si elegiste telegram ---
+# Token del bot (lo da @BotFather) y el chat al que te escribe.
+# TELEGRAM_TOKEN='123456:AAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+# TELEGRAM_CHAT='987654321'
+
+# --- si elegiste comando ---
+# Ejecutable o script que recibe el mensaje como primer argumento ($1).
+# Útil si ya tienes un webhook, un correo o un servidor propio autenticado:
+# así el token nunca vive en esta máquina.
+# AVISO_COMANDO="$HOME/bin/avisame.sh"
+
+# ── Umbrales ─────────────────────────────────────────────────────────────────
+# % de la ventana de 5 h a partir del cual se considera agotada y se pausa.
+UMBRAL_CUPO=95
+
+# Segundos mínimos entre intentos de reabrir la sesión. Evita que una caída
+# persistente termine abriendo veinte ventanas.
+COOLDOWN=600
+
+# ── Rutas (cámbialas sólo si tu instalación no es la estándar) ───────────────
+# Binario de Claude Code. Por defecto se busca en el PATH.
+# CLAUDE_BIN="$HOME/.local/bin/claude"
+
+# Archivo de cupo que escribe el statusline del Gearbox. Si no usas el
+# statusline del Gearbox, el guardián no puede vigilar el cupo (sí las caídas).
+# GUARDIAN_USAGE="$HOME/.claude/gearbox/usage.json"
