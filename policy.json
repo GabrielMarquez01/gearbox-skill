@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "mode": "observe",
+  "privacy": {
+    "store_prompt": false
+  },
+  "automation": {
+    "min_confidence": 0.9,
+    "min_samples": 100,
+    "allowed_gears": ["G0", "G1", "G2"]
+  },
+  "human_gate_categories": [
+    "security",
+    "privacy",
+    "payments",
+    "production",
+    "legal",
+    "deletion",
+    "irreversible"
+  ]
+}

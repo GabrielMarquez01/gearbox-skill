@@ -1,102 +1,216 @@
 #!/usr/bin/env bash
-# ⚙ Gearbox — Instalador de 1 línea
-# curl -fsSL https://raw.githubusercontent.com/GabrielMarquez01/gearbox-skill/master/install.sh | bash
+# ⚙ Gearbox V3 Preview — installer (backward-compatible, observe mode by default)
 set -euo pipefail
 
-REPO_RAW="https://raw.githubusercontent.com/GabrielMarquez01/gearbox-skill/master"
-CLAUDE_DIR="$HOME/.claude"
+GEARBOX_REF="${GEARBOX_REF:-master}"
+REPO_RAW="https://raw.githubusercontent.com/GabrielMarquez01/gearbox-skill/${GEARBOX_REF}"
+CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 GB_DIR="$CLAUDE_DIR/gearbox"
 SKILL_DIR="$CLAUDE_DIR/skills/gearbox"
+BACKUP_DIR="$CLAUDE_DIR/backups/gearbox"
+TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 
-echo "⚙ Instalando Gearbox..."
+command -v python3 >/dev/null 2>&1 || {
+  echo "❌ Gearbox requiere Python 3.9 o posterior." >&2
+  exit 1
+}
+python3 - <<'PY'
+import sys
+if sys.version_info < (3, 9):
+    raise SystemExit("Gearbox requiere Python 3.9 o posterior")
+PY
 
-# 1. Carpetas
-mkdir -p "$GB_DIR" "$SKILL_DIR"
+echo "⚙ Instalando Gearbox V3 Preview (${GEARBOX_REF})..."
+mkdir -p "$GB_DIR" "$SKILL_DIR" "$BACKUP_DIR"
 
-# 2. Archivos (desde el repo si corre vía curl; locales si corre desde el clone)
-fetch() { # $1=archivo $2=destino
-  if [ -f "$(dirname "$0")/$1" ] 2>/dev/null && [ "$0" != "bash" ]; then
-    cp "$(dirname "$0")/$1" "$2"
+fetch() { # $1=source $2=destination
+  local src="$1" dest="$2"
+  if [ -f "$(dirname "$0")/$src" ] 2>/dev/null && [ "$0" != "bash" ]; then
+    cp "$(dirname "$0")/$src" "$dest"
   else
-    curl -fsSL "$REPO_RAW/$1" -o "$2"
+    curl -fsSL "$REPO_RAW/$src" -o "$dest"
   fi
 }
-fetch "SKILL.md"      "$SKILL_DIR/SKILL.md"
-fetch "README.md"     "$SKILL_DIR/README.md"
+
+# Backup inmutable de la configuración previa + snapshots fechados para upgrades.
+SETTINGS="$CLAUDE_DIR/settings.json"
+if [ -f "$SETTINGS" ]; then
+  [ -f "$BACKUP_DIR/settings.pre-gearbox.json" ] || cp "$SETTINGS" "$BACKUP_DIR/settings.pre-gearbox.json"
+  cp "$SETTINGS" "$BACKUP_DIR/settings.${TIMESTAMP}.json"
+fi
+
+# Archivos principales. El núcleo Python se instala antes de los wrappers.
+fetch "gearbox.py"    "$GB_DIR/gearbox.py"
+
+# Biblioteca de soporte (privacidad, consentimiento, cola, transporte, priors).
+mkdir -p "$GB_DIR/gearboxlib"
+for module in __init__ paths privacy consent capsule outbox transport priors; do
+  fetch "gearboxlib/${module}.py" "$GB_DIR/gearboxlib/${module}.py"
+done
+chmod 700 "$GB_DIR/gearboxlib" 2>/dev/null || true
+
 fetch "statusline.sh" "$GB_DIR/statusline.sh"
 fetch "reset.sh"      "$GB_DIR/reset.sh"
 fetch "set.sh"        "$GB_DIR/set.sh"
 fetch "log.sh"        "$GB_DIR/log.sh"
-chmod +x "$GB_DIR/statusline.sh" "$GB_DIR/reset.sh" "$GB_DIR/set.sh" "$GB_DIR/log.sh"
+fetch "uninstall.sh"  "$GB_DIR/uninstall.sh"
+fetch "SKILL.md"      "$SKILL_DIR/SKILL.md"
+fetch "README.md"     "$SKILL_DIR/README.md"
+fetch "docs/PREDICTIVE-LOOP.md" "$SKILL_DIR/PREDICTIVE-LOOP.md"
+chmod +x "$GB_DIR/gearbox.py" "$GB_DIR/statusline.sh" "$GB_DIR/reset.sh" \
+  "$GB_DIR/set.sh" "$GB_DIR/log.sh" "$GB_DIR/uninstall.sh"
 
-# prices.json: solo instalar si no existe (no sobrescribir precios personalizados)
+# No sobrescribir configuración local de precios/política.
 if [ ! -f "$GB_DIR/prices.json" ]; then
   fetch "prices.json" "$GB_DIR/prices.json"
   echo "  ✅ prices.json instalado"
 else
-  echo "  ✅ prices.json ya existe — conservado (no sobrescrito)"
+  echo "  ✅ prices.json conservado"
+fi
+if [ ! -f "$GB_DIR/policy.json" ]; then
+  fetch "policy.json" "$GB_DIR/policy.json"
+  echo "  ✅ policy.json instalado en modo observe"
+else
+  echo "  ✅ policy.json conservado"
 fi
 
-bash "$GB_DIR/reset.sh"
-echo "  ✅ Skill y scripts instalados"
+# Merge seguro de settings.json. No reemplaza un statusLine ajeno.
+python3 - "$SETTINGS" "$GB_DIR" <<'PY'
+import json
+import os
+import sys
+from pathlib import Path
 
-# 3. Merge de settings.json (backup primero; requiere python3, presente en Mac/Linux/WSL)
-SETTINGS="$CLAUDE_DIR/settings.json"
-[ -f "$SETTINGS" ] && cp "$SETTINGS" "$SETTINGS.backup-gearbox"
-python3 - "$SETTINGS" <<'PYEOF'
-import json, os, sys
-path = sys.argv[1]
+path = Path(sys.argv[1])
+gb_dir = Path(sys.argv[2])
 data = {}
-if os.path.exists(path):
-    with open(path) as f:
-        data = json.load(f)
+if path.exists():
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"settings.json no es JSON válido: {exc}")
 
-home = os.path.expanduser("~")
-data["statusLine"] = {
-    "type": "command",
-    "command": f"{home}/.claude/gearbox/statusline.sh",
-    "padding": 0,
-}
+status_cmd = str(gb_dir / "statusline.sh")
+existing_status = data.get("statusLine")
+if not existing_status or "gearbox" in json.dumps(existing_status).lower():
+    data["statusLine"] = {"type": "command", "command": status_cmd, "padding": 0}
+    print("  ✅ statusLine Gearbox configurado")
+else:
+    print("  ⚠ statusLine existente conservado; Gearbox sigue activo sin reemplazarlo")
+
 hooks = data.setdefault("hooks", {})
-ss = hooks.setdefault("SessionStart", [])
-cmd = f"{home}/.claude/gearbox/reset.sh"
-if not any(cmd in json.dumps(e) for e in ss):
-    ss.append({"hooks": [{"type": "command", "command": cmd, "async": True}]})
 
-# opusplan solo si no hay modelo configurado (respeta tu elección previa)
+def add_hook(event: str, command: str, *, async_mode=None, timeout=None):
+    entries = hooks.setdefault(event, [])
+    if any(command in json.dumps(entry, ensure_ascii=False) for entry in entries):
+        return False
+    hook = {"type": "command", "command": command}
+    if async_mode is not None:
+        hook["async"] = async_mode
+    if timeout is not None:
+        hook["timeout"] = timeout
+    entries.append({"hooks": [hook]})
+    return True
+
+reset_cmd = str(gb_dir / "reset.sh")
+hook_cmd = f"python3 {gb_dir / 'gearbox.py'} hook"
+add_hook("SessionStart", reset_cmd, async_mode=True)
+add_hook("UserPromptSubmit", hook_cmd, timeout=5)
+
+# Compatibilidad con la experiencia anterior: sólo define default si el usuario no tiene uno.
 data.setdefault("model", "opusplan")
 
-with open(path, "w") as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
-print("  ✅ settings.json actualizado (backup en settings.json.backup-gearbox)")
-PYEOF
+path.parent.mkdir(parents=True, exist_ok=True)
+tmp = path.with_suffix(path.suffix + ".tmp")
+tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+os.replace(tmp, path)
+print("  ✅ hooks SessionStart + UserPromptSubmit configurados")
+PY
 
-# 4. Directiva en CLAUDE.md global (idempotente)
+# Directiva global versionada. Sustituye el bloque legado conocido y evita duplicados.
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
-if ! grep -q "skills/gearbox/SKILL.md" "$CLAUDE_MD" 2>/dev/null; then
-  cat >> "$CLAUDE_MD" <<'EOF'
+touch "$CLAUDE_MD"
+python3 - "$CLAUDE_MD" <<'PY'
+import re
+import sys
+from pathlib import Path
 
-## Gearbox — Selector de Modelo y Esfuerzo (SIEMPRE ACTIVO)
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+start = "<!-- GEARBOX:START -->"
+end = "<!-- GEARBOX:END -->"
+block = f'''{start}
+## Gearbox — Gobierno predictivo de modelo y esfuerzo
 
-En TODA sesión, aplicar el protocolo de `~/.claude/skills/gearbox/SKILL.md`:
-clasificar cada tarea en una marcha (G0-G5); si la marcha recomendada difiere de la
-configuración actual, PAUSA y emitir el bloque ⚙ GEARBOX con comando exacto, razón
-en 1 frase y economía; delegar rutina a Haiku; actualizar ~/.claude/gearbox/state.json
-y registrar en log.jsonl. Sesión Fable (G5) siempre con gate de costo.
-EOF
-  echo "  ✅ Directiva agregada a ~/.claude/CLAUDE.md"
-else
-  echo "  ✅ Directiva ya existía en CLAUDE.md"
+Aplicar `~/.claude/skills/gearbox/SKILL.md`. Gearbox V3 opera por defecto en modo
+`observe`: el hook `UserPromptSubmit` clasifica y registra cada tarea, añade una
+predicción explicable y NO cambia automáticamente el modelo. Mantener compatibilidad
+con los comandos `set.sh`, `reset.sh` y `log.sh`; las decisiones de calibración viven
+en `~/.claude/gearbox/decisions.jsonl` y la telemetría predictiva en `gearbox.db`.
+Para seguridad, pagos, producción, datos personales, legal, eliminación o acciones
+irreversibles, mantener gate humano. Tratar la probabilidad de éxito como estimación,
+nunca como garantía.
+{end}'''
+
+# Quitar bloques Gearbox gestionados por versiones anteriores.
+text = re.sub(r"\n?<!-- GEARBOX:START -->.*?<!-- GEARBOX:END -->\n?", "\n", text, flags=re.S)
+text = re.sub(
+    r"\n?## Gearbox — Selector de Modelo y Esfuerzo \(SIEMPRE ACTIVO\).*?(?=\n## |\Z)",
+    "\n",
+    text,
+    flags=re.S,
+)
+text = text.rstrip() + "\n\n" + block + "\n"
+path.write_text(text, encoding="utf-8")
+print("  ✅ directiva global Gearbox V3 actualizada")
+PY
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Consentimiento de telemetría. Por defecto: LOCAL. Nada premarcado.
+# ─────────────────────────────────────────────────────────────────────────────
+python3 - "$GB_DIR" <<'PY'
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(sys.argv[1])))
+import os
+
+os.environ.setdefault("GEARBOX_HOME", sys.argv[1])
+from gearboxlib import consent   # noqa: E402
+
+record = consent.bootstrap_from_env()
+if record["status"] == "granted":
+    print(f"  ✅ telemetría {record['mode']} activada por variables de entorno explícitas")
+else:
+    print("  ✅ modo LOCAL: no se transmite nada (telemetría desactivada)")
+PY
+
+# En instalaciones interactivas se ofrece la elección, sin casillas premarcadas.
+if [ -t 0 ] && [ "${GEARBOX_NONINTERACTIVE:-0}" != "1" ]; then
+  echo ""
+  python3 "$GB_DIR/gearbox.py" telemetry explain 2>/dev/null | head -30 || true
+  echo ""
+  echo "  Selecciona:"
+  echo "   1. Local únicamente  (por defecto — ya está activo, no hagas nada)"
+  echo "   2. Community Learning:  $GB_DIR/gearbox.py telemetry enable community"
+  echo "   3. Colector propio:     $GB_DIR/gearbox.py telemetry enable self-hosted --endpoint https://..."
+  echo ""
 fi
 
+"$GB_DIR/reset.sh"
+"$GB_DIR/gearbox.py" doctor
+
 echo ""
-echo "⚙ Gearbox V2 instalado. Reinicia Claude Code y verás la marcha en azul:"
-echo "   ⚙ G2 · <tu modelo> · high · ejecución · ≈1x"
+echo "⚙ Gearbox V3 Preview instalado en modo seguro: observe"
+echo "   Predice y registra; NO cambia el modelo automáticamente."
 echo ""
 echo "   Comandos útiles:"
-echo "   ~/.claude/gearbox/set.sh G5 arquitectura high   # fijar marcha"
-echo "   ~/.claude/gearbox/set.sh auto                   # modo auto (recomendado)"
-echo "   ~/.claude/gearbox/reset.sh                      # volver a auto"
-echo ""
-echo "   Desinstalar: rm -rf ~/.claude/gearbox ~/.claude/skills/gearbox"
-echo "                + restaurar ~/.claude/settings.json.backup-gearbox"
+echo "   $GB_DIR/gearbox.py classify --prompt 'Audita este repositorio'"
+echo "   $GB_DIR/gearbox.py history --limit 10"
+echo "   $GB_DIR/gearbox.py feedback <task_id> accepted"
+echo "   $GB_DIR/gearbox.py doctor"
+echo "   $GB_DIR/uninstall.sh"
+if [ "$GEARBOX_REF" = "master" ]; then
+  echo ""
+  echo "   ⚠ Instalación desde master. Para producción, fija GEARBOX_REF a una release."
+fi

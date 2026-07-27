@@ -1,0 +1,57 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+# Permisos mínimos: el workflow sólo lee el repositorio.
+permissions:
+  contents: read
+
+jobs:
+  unittest:
+    name: ${{ matrix.os }} · Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.9", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Suite completa
+        run: python -m unittest discover -s tests -v
+
+      - name: Sintaxis de los scripts shell
+        run: bash -n install.sh uninstall.sh statusline.sh set.sh reset.sh log.sh
+
+      - name: Compilación de todos los módulos
+        run: python -m compileall -q gearbox.py gearboxlib collector audit tests
+
+      - name: El modo local no abre conexiones
+        run: python -m unittest tests.test_compat_transport.LocalModeIsOfflineTests -v
+
+      - name: Ningún secreto real en el repositorio
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          # Los secretos de prueba viven sólo en tests/support.py y son ficticios.
+          ! grep -rIn --exclude-dir=.git --exclude=support.py \
+              -E '(AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|sk-ant-[A-Za-z0-9]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)' .
+
+  windows-note:
+    name: Windows (documentado vía WSL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar que Windows está documentado, no ignorado
+        run: |
+          grep -q "WSL" README.md || {
+            echo "Windows debe documentarse explícitamente en el README" >&2
+            exit 1
+          }
+          echo "Windows se soporta vía WSL; los scripts son bash y no se prueban"
+          echo "en PowerShell nativo. Declarado, no simulado."

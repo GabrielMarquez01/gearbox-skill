@@ -1,0 +1,10 @@
+# Artefactos de Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Bases y estado local generados al probar
+*.db
+collector.db
+/outbox/
