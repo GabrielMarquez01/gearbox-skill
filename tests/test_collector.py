@@ -6,9 +6,13 @@ que acepta.
 from __future__ import annotations
 
 import gzip
+import hashlib
+import hmac
 import json
+import os
 import time
 import unittest
+from unittest import mock
 from hashlib import sha256
 
 import sys as _sys
@@ -236,6 +240,24 @@ class RetentionAndAggregationTests(unittest.TestCase):
 
 
 class PriorsClientTests(IsolatedHome):
+    def test_signature_is_revalidated_on_every_load(self):
+        key = b"community-signing-key"
+        document = self._document()
+        document["signature"] = {
+            "alg": "HMAC-SHA256",
+            "value": hmac.new(
+                key, priors.content_digest(document).encode(), hashlib.sha256
+            ).hexdigest(),
+        }
+        with mock.patch.dict(os.environ, {"GEARBOX_PRIORS_HMAC_KEY": key.decode()}):
+            priors.store(document, hmac_key=key)
+            self.assertIsNotNone(priors.load())
+            stored = json.loads(priors.priors_path().read_text())
+            stored["routes"][0]["accepted_rate_band"] = "0.1-0.2"
+            stored["content_sha256"] = priors.content_digest(stored)
+            priors.priors_path().write_text(json.dumps(stored))
+            self.assertIsNone(priors.load())
+
     def _document(self, samples: str = "25-49") -> dict:
         document = {
             "schema_version": "1.0",

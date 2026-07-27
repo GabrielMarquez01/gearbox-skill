@@ -106,6 +106,25 @@ class CapsuleTests(IsolatedHome):
             ids.append(record["task_id"])
         return core, ids
 
+    def test_reserved_events_are_confirmed_only_after_delivery(self):
+        _, ids = self._seed(1)
+        built, selected = gb_capsule.build("community")
+        self.assertEqual(selected, ids)
+        gb_capsule.reserve(selected, built["capsule_id"])
+
+        pending, _ = gb_capsule.build("community")
+        self.assertEqual(pending["events"], [])
+
+        gb_capsule.release(built["capsule_id"])
+        retry, retry_ids = gb_capsule.build("community")
+        self.assertEqual(len(retry["events"]), 1)
+        self.assertEqual(retry_ids, ids)
+
+        gb_capsule.reserve(retry_ids, retry["capsule_id"])
+        gb_capsule.mark_delivered(retry["capsule_id"])
+        delivered, _ = gb_capsule.build("community")
+        self.assertEqual(delivered["events"], [])
+
     def test_capsule_contains_only_allowlisted_fields(self):
         self._seed()
         built, _ = gb_capsule.build("community")

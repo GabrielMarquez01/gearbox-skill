@@ -24,6 +24,7 @@ Esto es **infraestructura temprana y honesta**: no comparte cuentas ni sesiones 
 ## 📑 Índice
 
 - [Quick Start](#-quick-start)
+- [Público, privado y reportes comunitarios](#-público-privado-y-reportes-comunitarios)
 - [Cómo se organiza la flota](#-cómo-se-organiza-la-flota)
 - [Las marchas G0–G5](#-las-marchas-g0g5)
 - [¿Cuánto rinde? — con y sin Gearbox](#-cuánto-rinde--la-misma-cuenta-con-y-sin-gearbox) *(actualización Opus 5)*
@@ -50,7 +51,44 @@ curl -fsSL https://raw.githubusercontent.com/GabrielMarquez01/gearbox-skill/mast
 
 Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json` antes de tocarlo. Si prefieres revisar antes de ejecutar: clona el repo y corre `bash install.sh`. Detalle completo del skill en el [README clásico](README-viejo.md).
 
-> Requisitos: Claude Code v2.1.170+ (`claude update`) · bash · python3. Los scripts son bash+sed puros.
+> Requisitos: Claude Code v2.1.219+ (`claude update`) · bash · Python 3.9+. El núcleo usa únicamente la biblioteca estándar de Python y SQLite.
+
+## 🔐 Público, privado y reportes comunitarios
+
+Gearbox separa dos responsabilidades:
+
+| Parte | Qué contiene | Dónde vive |
+|---|---|---|
+| **Cliente público** | routing, feedback local, vista previa, sanitización y envío consentido | este repositorio MIT |
+| **Servicio privado** | endpoint productivo, secretos, almacenamiento, monitoreo y publicación de agregados | infraestructura privada del operador |
+
+El cliente funciona completamente en modo `local` y **no transmite nada por
+defecto**. Participar en Community Learning es voluntario:
+
+```bash
+~/.claude/gearbox/gearbox.py telemetry explain
+~/.claude/gearbox/gearbox.py telemetry enable community
+~/.claude/gearbox/gearbox.py telemetry preview
+~/.claude/gearbox/gearbox.py telemetry send
+```
+
+El reporte incluye categorías y bandas —por ejemplo, marcha, familia de modelo,
+resultado y retrabajo— pero no prompts, respuestas, código, nombres de proyecto,
+rutas ni credenciales. Un evento se considera entregado únicamente después de
+que el colector lo acepta.
+
+Para aportar feedback:
+
+```bash
+~/.claude/gearbox/gearbox.py feedback last accepted
+~/.claude/gearbox/gearbox.py feedback last rework --reason wrong_gear
+~/.claude/gearbox/gearbox.py telemetry preview
+```
+
+Consulta [cómo reportar resultados](docs/USER-REPORTING.md) y la
+[frontera público/privado](docs/PUBLIC-PRIVATE-BOUNDARY.md). El código de
+`collector/` es una referencia auditable y autoalojable; no contiene ni
+representa la infraestructura productiva de OpenGravity.
 
 ### Capa 2 — Multi-motor (opcional)
 

@@ -1,6 +1,6 @@
 # Matriz de promesas y evidencia
 
-> **Actualizado: 2026-07-26** · 151 pruebas, todas pasando.
+> **Actualizado: 2026-07-27** · 154 pruebas, todas pasando localmente en WSL.
 > Verificado en CI en **6 combinaciones**: Ubuntu y macOS × Python 3.9, 3.11 y
 > 3.12 ([run 30189667575](https://github.com/GabrielMarquez01/gearbox-skill/actions/runs/30189667575)).
 > Localmente sólo se ejecutó 3.12 sobre Linux/WSL.
@@ -18,6 +18,7 @@ existe) · `pendiente-legal` (requiere abogado).
 |---|---|---|---|
 | No se envían prompts | allowlist cerrada + escáner | `test_capsule_contains_only_allowlisted_fields`, `test_forbidden_fields_are_rejected_one_by_one` | **verificado** |
 | No se **almacena** el prompt ni su hash | `record_prediction` sin `prompt_hash` | `test_record_prediction_stores_no_path_no_session_no_prompt_hash` | **verificado** |
+| El identificador de tarea no se deriva del prompt | UUID aleatorio independiente del contenido | `test_task_id_is_random_and_independent_of_prompt` | **verificado** |
 | No se almacenan rutas locales | seudónimo HMAC con sal local | misma prueba (revisa los bytes crudos de la base) | **verificado** |
 | Los seudónimos no son correlacionables entre equipos | sal aleatoria por instalación | `test_local_ref_is_not_correlatable_across_installs` | **verificado** |
 | Las bases heredadas se pueden limpiar | `privacy scrub-local` | `test_scrub_local_clears_legacy_rows` | **verificado** |
@@ -68,6 +69,7 @@ Ambas sustituyen `socket.socket`, `socket.create_connection` y
 | No duplica | `capsule_id` como PRIMARY KEY | `test_enqueue_then_duplicate_is_idempotent` | **verificado** |
 | Reintentos con backoff creciente y jitter | `backoff_seconds` | `test_backoff_grows_and_has_deterministic_jitter` | **verificado** |
 | No pierde en silencio | estados explícitos + `last_error_code` | `test_failure_schedules_backoff_and_keeps_entry`, `test_gives_up_after_max_attempts_without_losing_trace` | **verificado** |
+| Un evento sólo queda entregado tras aceptación del colector | estados `reserved` → `delivered`; liberación al fallar | `test_reserved_events_are_confirmed_only_after_delivery` | **verificado** |
 | Expira y purga | `purge_expired`, `purge_all` | `test_expired_entries_are_purged`, `test_purge_all_empties_queue_and_files` | **verificado** |
 | Rechaza cápsulas demasiado grandes | tope por cantidad **y** por bytes | `test_oversized_capsule_is_rejected` | **verificado** |
 | El payload es gzip del JSON canónico con su SHA-256 | `enqueue` | `test_stored_payload_is_valid_gzip_of_canonical_json` | **verificado** |
@@ -110,7 +112,7 @@ Ambas sustituyen `socket.socket`, `socket.create_connection` y
 | Cohortes < 20 no se publican | umbral | `test_small_cohort_is_never_published`, `test_cohort_violation_is_rejected` | **verificado** |
 | Pocos contribuyentes distintos tampoco | umbral de 5 | `test_many_events_but_few_contributors_is_suppressed` | **verificado** |
 | Documentos alterados se rechazan | `content_sha256` | `test_tampered_document_is_rejected`, `test_missing_hash_is_rejected` | **verificado** |
-| Firma HMAC se verifica cuando hay clave | `hmac.compare_digest` | `test_hmac_signature_is_verified_when_key_present` | **verificado** |
+| Firma HMAC se verifica al guardar y en cada lectura cuando hay clave | `hmac.compare_digest` + clave configurada | `test_hmac_signature_is_verified_when_key_present`, `test_signature_is_revalidated_on_every_load` | **verificado** |
 | Versión incompatible se rechaza | `SUPPORTED_SCHEMA` | `test_incompatible_schema_is_rejected` | **verificado** |
 | Se conserva el último válido ante un rechazo | `store()` atómico | `test_last_valid_document_survives_a_rejection` | **verificado** |
 | Un archivo tocado en disco no cuela | revalidación al leer | `test_corrupt_file_on_disk_is_ignored` | **verificado** |

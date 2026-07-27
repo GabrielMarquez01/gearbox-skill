@@ -39,10 +39,16 @@ def connect() -> sqlite3.Connection:
         CREATE TABLE IF NOT EXISTS telemetry_marks (
             task_id TEXT PRIMARY KEY,
             capsule_id TEXT NOT NULL,
-            marked_at TEXT NOT NULL
+            marked_at TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'reserved'
         )
         """
     )
+    columns = _columns(conn, "telemetry_marks")
+    if "status" not in columns:
+        conn.execute(
+            "ALTER TABLE telemetry_marks ADD COLUMN status TEXT NOT NULL DEFAULT 'delivered'"
+        )
     conn.commit()
     return conn
 
@@ -188,17 +194,60 @@ def build(mode: str, *, period: str | None = None, limit: int = MAX_EVENTS_PER_C
     return capsule, task_ids
 
 
-def mark_sent(task_ids: list[str], capsule_id: str) -> int:
+def reserve(task_ids: list[str], capsule_id: str) -> int:
+    """Reserva eventos al encolar; todavía no los considera entregados."""
     if not task_ids:
         return 0
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     with connect() as conn:
         conn.executemany(
-            "INSERT OR IGNORE INTO telemetry_marks (task_id, capsule_id, marked_at) VALUES (?,?,?)",
+            "INSERT OR IGNORE INTO telemetry_marks "
+            "(task_id, capsule_id, marked_at, status) VALUES (?,?,?,'reserved')",
             [(task_id, capsule_id, now) for task_id in task_ids],
         )
         conn.commit()
     return len(task_ids)
+
+
+def mark_delivered(capsule_id: str) -> int:
+    """Confirma eventos únicamente después de una respuesta HTTP exitosa."""
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    with connect() as conn:
+        cursor = conn.execute(
+            "UPDATE telemetry_marks SET status='delivered', marked_at=? "
+            "WHERE capsule_id=? AND status='reserved'",
+            (now, capsule_id),
+        )
+        conn.commit()
+        return cursor.rowcount or 0
+
+
+def release(capsule_id: str) -> int:
+    """Libera eventos de una cápsula fallida/descartada para poder reenviarlos."""
+    with connect() as conn:
+        cursor = conn.execute(
+            "DELETE FROM telemetry_marks WHERE capsule_id=? AND status='reserved'",
+            (capsule_id,),
+        )
+        conn.commit()
+        return cursor.rowcount or 0
+
+
+def release_all_reserved() -> int:
+    """Libera reservas pendientes al purgar la cola o revocar consentimiento."""
+    with connect() as conn:
+        cursor = conn.execute("DELETE FROM telemetry_marks WHERE status='reserved'")
+        conn.commit()
+        return cursor.rowcount or 0
+
+
+def mark_sent(task_ids: list[str], capsule_id: str) -> int:
+    """Compatibilidad: reserva y confirma inmediatamente.
+
+    El flujo de producción usa ``reserve`` y ``mark_delivered`` por separado.
+    """
+    reserve(task_ids, capsule_id)
+    return mark_delivered(capsule_id)
 
 
 def clear_marks() -> int:

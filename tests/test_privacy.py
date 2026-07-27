@@ -135,6 +135,13 @@ class BandingTests(unittest.TestCase):
 
 
 class LocalStorageTests(IsolatedHome):
+    def test_task_id_is_random_and_independent_of_prompt(self):
+        core = load_core()
+        first = core.make_task_id("same-session", "same prompt")
+        second = core.make_task_id("same-session", "same prompt")
+        self.assertNotEqual(first, second)
+        self.assertNotIn("same", first)
+
     """La base local no debe guardar rutas, sesiones ni hashes de prompt."""
 
     def test_record_prediction_stores_no_path_no_session_no_prompt_hash(self):

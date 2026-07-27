@@ -13,6 +13,7 @@ como **pendiente de infraestructura** y no se simula.
 from __future__ import annotations
 
 import hmac
+import os
 import re
 from hashlib import sha256
 from pathlib import Path
@@ -113,11 +114,17 @@ def store(document: dict[str, Any], *, hmac_key: bytes | None = None) -> dict[st
     return document
 
 
+def _configured_key() -> bytes | None:
+    value = (os.environ.get("GEARBOX_PRIORS_HMAC_KEY") or "").strip()
+    return value.encode("utf-8") if value else None
+
+
 def load() -> dict[str, Any] | None:
     document = read_json(priors_path(), None)
     if not isinstance(document, dict):
         return None
-    if validate(document):     # se revalida al leer: un archivo tocado en disco no pasa
+    # La firma se revalida en cada lectura cuando hay una clave configurada.
+    if validate(document, hmac_key=_configured_key()):
         return None
     return document
 

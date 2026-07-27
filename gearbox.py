@@ -8,13 +8,13 @@ active model or executes destructive actions.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
 import sqlite3
 import sys
 import tempfile
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,7 +32,7 @@ from gearboxlib import privacy as gb_privacy          # noqa: E402
 from gearboxlib import transport as gb_transport      # noqa: E402
 from gearboxlib.paths import ensure_private_dir, harden, install_salt  # noqa: E402
 
-VERSION = "3.0.0-preview.2"
+VERSION = "3.0.0-preview.3"
 VALID_GEARS = ("auto", "G0", "G1", "G2", "G3", "G3.5", "G4", "G5")
 DEFAULT_TASKS = {
     "auto": "auto",
@@ -497,8 +497,12 @@ def classify(prompt: str, project: str = "") -> Route:
 
 
 def make_task_id(session_id: str, prompt: str) -> str:
-    seed = f"{session_id}|{utc_now()}|{prompt}"
-    return "gbx-" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
+    """Crea un identificador aleatorio, independiente del contenido del usuario.
+
+    Los parámetros se conservan por compatibilidad con llamadas anteriores, pero
+    deliberadamente no participan en el identificador.
+    """
+    return "gbx-" + uuid.uuid4().hex[:16]
 
 
 def record_prediction(route: Route, prompt: str, session_id: str = "", project_id: str = "") -> dict[str, Any]:
@@ -1004,12 +1008,12 @@ def cmd_telemetry(args: argparse.Namespace) -> int:
 
     if action == "revoke":
         removed = gb_outbox.purge_all()
-        marks = gb_capsule.clear_marks()
+        released = gb_capsule.release_all_reserved()
         gb_consent.revoke()
         print(json.dumps({
             "revoked": True,
             "queued_capsules_deleted": removed,
-            "local_send_marks_cleared": marks,
+            "reserved_events_released": released,
             "contributor_id": None,
             "receipt": str(gb_consent.receipts_path()),
             "note": ("Si el colector ya recibió cápsulas, solicita su eliminación con el "
@@ -1028,7 +1032,9 @@ def cmd_telemetry(args: argparse.Namespace) -> int:
 
     if action == "purge":
         removed = gb_outbox.purge_all()
-        print(f"⚙ Cola vaciada: {removed} paquetes eliminados.")
+        released = gb_capsule.release_all_reserved()
+        print(f"⚙ Cola vaciada: {removed} paquetes eliminados; "
+              f"{released} eventos liberados.")
         return 0
 
     if action in ("preview", "export"):
@@ -1064,7 +1070,7 @@ def cmd_telemetry(args: argparse.Namespace) -> int:
             else:
                 try:
                     gb_outbox.enqueue(built, record["policy_version"])
-                    gb_capsule.mark_sent(task_ids, built["capsule_id"])
+                    gb_capsule.reserve(task_ids, built["capsule_id"])
                     queued = 1
                 except gb_privacy.PrivacyViolation as exc:
                     print(f"❌ Bloqueado por el escáner de privacidad: {exc}", file=sys.stderr)
@@ -1083,11 +1089,17 @@ def cmd_telemetry(args: argparse.Namespace) -> int:
             )
             if result.ok:
                 gb_outbox.mark_sent(entry["capsule_id"])
+                gb_capsule.mark_delivered(entry["capsule_id"])
             else:
-                gb_outbox.mark_failed(entry["capsule_id"], result.code)
+                state = gb_outbox.mark_failed(entry["capsule_id"], result.code)
+                if state == gb_outbox.STATUS_FAILED:
+                    gb_capsule.release(entry["capsule_id"])
             results.append({"capsule_id": entry["capsule_id"], "ok": result.ok,
                             "code": result.code, "status": result.status})
         expired = gb_outbox.purge_expired()
+        for entry in gb_outbox.entries(limit=1000):
+            if entry["status"] in (gb_outbox.STATUS_FAILED, gb_outbox.STATUS_EXPIRED):
+                gb_capsule.release(entry["capsule_id"])
         print(json.dumps({"queued": queued, "attempted": len(results),
                           "results": results, "expired_purged": expired},
                          ensure_ascii=False, indent=2))
