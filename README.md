@@ -268,6 +268,7 @@ Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o
 | [SKILL.md](SKILL.md) | El cerebro del skill: tabla de decisión, protocolo, calibración, model watch |
 | [EFICIENCIA.md](EFICIENCIA.md) | 8 prácticas de ahorro que funcionan con o sin el skill (sesiones, contexto, MCP, caché) |
 | [guardian/README.md](guardian/README.md) | **Complemento opcional** (no se instala con el Gearbox): reabre la sesión si se cae, y cuando se agota el cupo anota dónde quedó y te avisa al renovarse |
+| [auto-clasifica/README.md](auto-clasifica/README.md) | **Complemento opcional** (no se instala con el Gearbox): clasifica la marcha por palabras clave en cada `Bash`/`Edit`/`Write`, sin depender de que el modelo se acuerde de hacerlo |
 
 ## 🤝 Contribuir / reportar resultados
 
