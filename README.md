@@ -263,6 +263,7 @@ Entra la sucesión: un suplente con especificación escrita mantiene el flujo, o
 
 | Documento | Qué contiene |
 |---|---|
+| [docs/LECCIONES-MULTI-MOTOR-2026-10.md](docs/LECCIONES-MULTI-MOTOR-2026-10.md) | 🆕 **7 lecciones de octubre 2026** operando varios motores en equipo: portero, auditor de otro proveedor, catálogo de modelos medido, receta vs ajuste en vivo, vigilante externo, nube vs PC, memoria en papel |
 | [docs/GEARBOX-EV6-MULTI-MOTOR.md](docs/GEARBOX-EV6-MULTI-MOTOR.md) | **El documento técnico completo**: arquitectura, guía de replicación paso a paso, contrato de enrolamiento, caso real del primer día, fricciones y controles |
 | [README-viejo.md](README-viejo.md) | README clásico del skill Gearbox para Claude Code (V2): instalación, statusline, marchas con comandos, FAQ del skill |
 | [SKILL.md](SKILL.md) | El cerebro del skill: tabla de decisión, protocolo, calibración, model watch |
