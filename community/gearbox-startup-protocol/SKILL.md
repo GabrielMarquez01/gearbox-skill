@@ -1,8 +1,8 @@
 ---
 name: gearbox-startup-protocol
-description: "Protocolo de arranque para agentes de mensajería continua (ej. Hermes): garantiza continuidad de flujo y entrega a canales, sin perder la regla de oro de Gearbox (clase más baja confiable) ni esconder degradaciones."
+description: "Protocolo de arranque para agentes de mensajería continua (por ejemplo, un bot de Telegram o WhatsApp): garantiza continuidad de flujo y entrega a canales, sin perder la regla de oro de Gearbox (clase más baja confiable) ni esconder degradaciones."
 version: 1.0.1
-author: Hermes + Gabriel Márquez (corregido por revisión de mantenedor antes de fusionar — ver notas)
+author: Gabriel Márquez
 ---
 
 # Protocolo de Arranque para Agentes de Mensajería (H0–H3)
