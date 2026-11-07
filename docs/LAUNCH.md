@@ -1,5 +1,11 @@
 # Gearbox Launch Notes
 
+Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+
+> **Material histórico del lanzamiento inicial (2026-07).** Los modelos, precios y ventanas de disponibilidad que
+> aparecen abajo corresponden a esa fecha (entonces: Fable 5). Para lo vigente —familia Claude 5.x, precios con
+> fecha de consulta e IDs— ver [README.md](../README.md), [SKILL.md](../SKILL.md) y [FUENTES.md](FUENTES.md).
+
 Material para compartir Gearbox sin prometer de mas. Copia, pega y ajusta al tono del canal.
 
 ## Mensaje central
@@ -11,7 +17,7 @@ Gearbox no es otro statusline. Es un recomendador para Claude Code: te ayuda a d
 - Independiente, open-source y no oficial de Anthropic.
 - No cambia automaticamente el modelo principal; recomienda el comando exacto.
 - Fable 5 no es para todo: es para arquitectura, infraestructura, contexto grande y decisiones ambiguas.
-- La ventana hasta 2026-07-07 viene de Anthropic: inclusion hasta 50% de limites semanales para Pro, Max, Team y algunos Enterprise; despues depende de usage credits.
+- (Vencido) La ventana de inclusion de Fable 5 que citaba el lanzamiento inicial ya termino; la disponibilidad por plan cambia con el tiempo: confirmala en la pagina oficial de tu plan antes de citarla.
 
 Fuentes:
 - https://www.anthropic.com/news/redeploying-fable-5
@@ -73,7 +79,7 @@ usarlo para arquitectura, infraestructura, decisiones multi-repo, root-cause dif
 No usarlo para copy, fixes pequeños, logs o tareas que Sonnet puede ejecutar bien.
 
 Contexto oportuno:
-Anthropic anuncio que Fable 5 esta incluido hasta 50% de limites semanales para ciertos planes hasta el 2026-07-07. Por eso conviene usarlo con intencion, no quemarlo en tareas pequeñas.
+Conviene usarlo con intencion, no quemarlo en tareas pequeñas. (La ventana de inclusion de 2026-07 ya vencio: no la cites; confirma tu plan en la pagina oficial.)
 
 Repo:
 https://github.com/GabrielMarquez01/gearbox-skill
@@ -116,7 +122,7 @@ Yo lo usaria para:
 No lo usaria para copy, fixes pequeños, logs o tareas que Sonnet puede ejecutar bien.
 
 Contexto oportuno:
-Anthropic anuncio que Fable 5 esta incluido hasta 50% de limites semanales para ciertos planes hasta el 2026-07-07. Justo por eso conviene usarlo con intencion.
+Conviene usarlo con intencion. (La ventana de inclusion de 2026-07 ya vencio: no la cites; confirma tu plan en la pagina oficial.)
 
 Repo:
 https://github.com/GabrielMarquez01/gearbox-skill
@@ -168,7 +174,7 @@ El punto es usar Fable 5 donde realmente tiene sentido:
 
 Y dejar a Sonnet/Haiku lo que pueden resolver bien.
 
-Esto se vuelve especialmente relevante porque Anthropic anuncio que Fable 5 esta incluido hasta 50% de limites semanales para ciertos planes hasta el 7 de julio de 2026; despues depende de usage credits.
+Esto importa porque la disponibilidad de Fable depende de tu plan y cambia con el tiempo (la ventana de inclusion de 2026-07 ya vencio): confirmala en la pagina oficial antes de citarla.
 
 La siguiente etapa de IA aplicada a negocio no es solo generar mas codigo.
 Es orquestar mejor: modelo correcto, tarea correcta, costo correcto.

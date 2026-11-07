@@ -1,9 +1,16 @@
 # Guardián de sesión — complemento opcional
 
+Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+
 > **No se instala con el Gearbox y no está activo por defecto.** Es un extra para quien
 > trabaja con sesiones largas o deja tareas corriendo mientras no está frente a la PC.
 
-Resuelve dos molestias concretas:
+> **Limitación conocida:** la vigilancia de cupo puede reutilizar una lectura vencida de
+> `usage.json` y alternar avisos de agotamiento y renovación sin datos nuevos. No uses esos
+> avisos como confirmación de cupo disponible; comprueba `/usage`. La corrección de vigencia
+> queda para un parche de código separado.
+
+Funciones previstas (con esa limitación):
 
 | Problema | Qué hace el guardián |
 |---|---|
@@ -32,8 +39,12 @@ que estar pendiente— sin ceder el control.
 ## Requisitos
 
 - `bash`, `curl`, `cron`
-- El **statusline del Gearbox instalado**, porque es quien escribe `~/.claude/gearbox/usage.json`
-  con el cupo (Claude Code se lo entrega en cada refresco, incluida la hora exacta de renovación)
+- Para vigilar **cupo**, una integración externa que escriba `~/.claude/gearbox/usage.json`.
+  El `statusline.sh` de `066477c` muestra porcentajes, pero no escribe ese archivo: su persistencia está
+  **pendiente del parche de código separado**. `rate_limits` solo llega en planes con límites de ventana
+  (suscripciones Pro, Max y Ultra de claude.ai, según la consulta del 2026-10-30 en
+  [FUENTES.md](../docs/FUENTES.md)); sin archivo el guardián vigila caídas, no cupo.
+  Esta actualización documental no corrige la vigencia del cupo; comprueba `/usage` aunque exista el archivo
 - Para **reabrir ventanas**: WSL + Windows Terminal. En Linux/macOS el guardián detecta y avisa,
   pero no abre la ventana solo — te manda el comando listo para pegar
 
@@ -52,7 +63,7 @@ Edita `~/.claude/guardian/guardian.conf` para elegir **cómo quieres que te avis
 registra la sesión y activa el ciclo:
 
 ```bash
-~/.claude/guardian/guardian.sh registrar          # toma la sesión activa
+~/.claude/guardian/guardian.sh registrar "ID_DE_TU_SESION"  # reemplaza el ID; sin él lee usage.json
 ( crontab -l 2>/dev/null; echo "*/3 * * * * $HOME/.claude/guardian/guardian.sh check >/dev/null 2>&1" ) | crontab -
 ~/.claude/guardian/guardian.sh estado             # verifica que quedó bien
 ```
@@ -104,7 +115,9 @@ Se dice de frente para que nadie se lleve una sorpresa:
 ## Cómo sabe cuánto cupo queda
 
 Claude Code entrega al statusline, en cada refresco, un bloque `rate_limits` con el porcentaje
-usado y la **hora exacta de renovación** de cada ventana. El statusline del Gearbox lo persiste en
-`~/.claude/gearbox/usage.json`; el guardián sólo lee ese archivo.
+usado y la **hora exacta de renovación** de cada ventana, según la consulta del 2026-10-30.
+El guardián solo lee `~/.claude/gearbox/usage.json`, si una integración externa lo genera.
+Persistir esos datos desde el statusline está **pendiente del parche de código separado**;
+el script publicado en `066477c` no lo hace.
 
 Es una lectura local y barata: **no consulta la red ni gasta cupo para saber cuánto cupo queda.**

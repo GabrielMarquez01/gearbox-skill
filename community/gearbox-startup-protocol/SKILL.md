@@ -7,6 +7,8 @@ author: Gabriel Márquez
 
 # Protocolo de Arranque para Agentes de Mensajería (H0–H3)
 
+Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+
 Variante de `gearbox-startup-protocol` pensada para agentes que corren de forma
 continua y entregan directo a canales de mensajería (Telegram, WhatsApp), donde
 la fricción de "preguntar antes de cada paso" no es viable en el flujo normal.

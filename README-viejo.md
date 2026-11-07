@@ -1,3 +1,12 @@
+> **Material histórico del README anterior (julio de 2026).** Todos los modelos, precios, porcentajes,
+> cálculos y comportamientos descritos abajo se conservan como material vencido, sin acreditarlos
+> como mediciones ni como funcionamiento actual. Las cifras empíricas de ahorro, duración,
+> despliegues y consumo de suscripción no tienen respaldo reproducible acreditado en este repo;
+> se preservan solo como parte del documento histórico. Para la documentación actual y sus referencias
+> fechadas, ver [README.md](README.md), [SKILL.md](SKILL.md) y [FUENTES.md](docs/FUENTES.md).
+
+Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+
 <div align="center">
 
 ![Gearbox](assets/banner.svg)

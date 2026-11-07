@@ -1,5 +1,7 @@
 # ⚡ Eficiencia con Agentes — 8 prácticas para no quemar tu presupuesto
 
+Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+
 > Guía práctica, independiente del Gearbox: **ábrela y úsala.** Ningún dato privado, ningún
 > setup previo. Son hábitos que reducen tu gasto (o consumen tus límites más lento) desde hoy.
 
@@ -93,11 +95,11 @@ esto es lo que ajusto".
 ## Por qué esto importa (el costo invisible)
 
 El error más caro y menos obvio: **cambiar de modelo a mitad de sesión reinicia el caché de
-prompt.** El descuento por caché (hasta 90%) se pierde, y la siguiente respuesta relee TODO tu
+prompt.** El descuento por caché (del 90 % al 97.5 % en lectura, según el modelo) se pierde, y la siguiente respuesta relee TODO tu
 historial a precio completo. Por eso las decisiones de modelo se toman **al inicio de la tarea**,
 no a media conversación.
 
-Con suscripción (Pro/Max) esto se traduce en **consumir tus límites más lento**. Con API, es
+Con suscripción esto debería notarse en **cuánto de tus límites consumes** (mídelo con `/usage`; no está medido en este repositorio). Con API, es
 **dinero directo**. En ambos casos: mismos resultados, menos desperdicio.
 
 ---
@@ -105,8 +107,8 @@ Con suscripción (Pro/Max) esto se traduce en **consumir tus límites más lento
 ## 🔀 El handoff: cómo no desperdiciar un modelo caro
 
 Elegir el modelo correcto es la mitad. La otra mitad es **cómo lo diriges**. Una sesión de un
-modelo caro (el "arquitecto") que explora sin rumbo cuesta más que diez sesiones baratas. El
-patrón que más ahorra es tratar cada modelo según su rol y hacer el traspaso limpio:
+modelo caro (el "arquitecto") que explora sin rumbo gasta mucho para poco. Un patrón que suele
+ayudar es tratar cada modelo según su rol y hacer el traspaso limpio:
 
 - **El caro piensa, diseña y decide.** No lo pongas a poner ladrillos.
 - **El barato ejecuta, edita y documenta.** Es quien construye lo que el caro diseñó.
@@ -120,7 +122,7 @@ patrón que más ahorra es tratar cada modelo según su rol y hacer el traspaso 
 4. **Hipótesis** a confirmar o refutar (le das dirección, no una hoja en blanco).
 5. **Salida estructurada** que esperas (un formato, no prosa libre).
 
-> Un modelo caro con estos 5 puntos entrega en una sesión lo que sin ellos toma tres.
+> Un modelo caro con estos 5 puntos suele necesitar menos vueltas que sin ellos (regla práctica, no una medición: compruébalo en tus tareas).
 
 ### Durante la sesión cara — mantenlo en carril
 - Concede **permisos puntuales**, no permisos amplios de edición.

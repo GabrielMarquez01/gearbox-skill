@@ -1,5 +1,7 @@
 # Gearbox EV6 — Torre de Control para equipos de IA multi-motor
 
+Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+
 ![Gearbox EV6 — Torre de Control multi-motor](./assets/gearbox-ev6-banner.png)
 
 > Documentación comunitaria para replicar el sistema con cuentas propias, sesiones independientes y auditoría entre proveedores.
@@ -9,6 +11,12 @@
 </p>
 
 **Versión 3 — 16 de julio de 2026**
+
+> **Documento fechado.** Describe el sistema tal como se probó el 15–16 de julio de 2026; los modelos, cifras y comandos de
+> instalación pueden haber cambiado. Lo vigente (familia Claude 5.x, precios con fecha de consulta) está en
+> [README.md](../README.md) y [SKILL.md](../SKILL.md). El 2026-10-30 se reconfirmaron contra `--help` las opciones
+> `codex exec --sandbox read-only` y `agy --sandbox --print`, y se comprobó que la URL del instalador de Antigravity del §4.12
+> sigue sirviendo un script de instalación (no se ejecutó): revisa cualquier instalador antes de correrlo.
 
 ## Executive summary
 
@@ -774,7 +782,7 @@ Los siguientes comandos fueron probados entre el 15 y el 16 de julio de 2026.
 
 #### Instalación de Antigravity CLI
 
-Verificada mediante el instalador oficial de Google:
+Verificada en julio de 2026 mediante el instalador oficial de Google (el 2026-10-30 la URL seguía sirviendo el script; ver el aviso al inicio):
 
 ```bash
 curl -fsSL https://antigravity.google/cli/install.sh | bash

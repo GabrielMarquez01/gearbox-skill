@@ -1,5 +1,7 @@
 # Auto-clasifica — complemento opcional
 
+Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+
 > **No se instala con el Gearbox y no está activo por defecto.** Es la versión mecánica
 > de la clasificación: en vez de depender de que el modelo se acuerde de correr
 > `set.sh`/`log.sh`, un hook se dispara solo en cada `Bash`/`Edit`/`Write`.
@@ -7,10 +9,9 @@
 ## El problema que resuelve
 
 La clasificación manual (`set.sh`/`log.sh decision`) depende de que el modelo la recuerde
-en cada turno. En una sesión larga real esto falló: 4 PRs llegaron a producción con **cero
-clasificaciones registradas** en un hueco de ~23h, a pesar de un recordatorio de texto en
-cada turno (`gearbox-recordatorio-turno.sh`, incluido en el core). El recordatorio ayuda,
-pero sigue siendo una promesa — y una promesa del modelo no es un candado.
+en cada turno. Un recordatorio de texto puede omitirse; por sí solo no asegura que cada
+acción quede registrada. Este complemento aplica una clasificación mecánica para reducir
+esa dependencia. No se afirma una frecuencia ni una duración medida de los olvidos.
 
 ## Qué hace
 
@@ -56,7 +57,7 @@ Agrega a `~/.claude/settings.json` (dentro de `hooks.PreToolUse`, junto a lo que
 {
   "matcher": "Bash|Edit|MultiEdit|Write",
   "hooks": [
-    { "type": "command", "command": "/home/TU_USUARIO/.claude/hooks/gearbox-auto-clasifica.sh", "timeout": 10 }
+    { "type": "command", "command": "$HOME/.claude/hooks/gearbox-auto-clasifica.sh", "timeout": 10 }
   ]
 }
 ```
