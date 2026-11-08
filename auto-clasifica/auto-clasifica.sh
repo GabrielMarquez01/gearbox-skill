@@ -3,9 +3,7 @@
 # auto-clasifica.sh — complemento OPCIONAL del Gearbox
 #
 # Resuelve una molestia concreta: la clasificación de marcha (G0-G5) depende de
-# que el modelo se acuerde de correr set.sh/log.sh cada vez — y eso falla. Una
-# sesión larga real mostró huecos de horas sin ningún registro (4 PRs mergeados
-# a producción con cero clasificaciones, ver docs/community para el caso).
+# que el modelo se acuerde de correr set.sh/log.sh cada vez.
 #
 # Este hook es la "báscula automática": se dispara SOLO (sin que el modelo
 # tenga que acordarse) cada vez que se ejecuta Bash/Edit/Write, y clasifica por

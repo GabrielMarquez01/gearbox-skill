@@ -1,16 +1,15 @@
 # Guardián de sesión — complemento opcional
 
-Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+Actualizado: 2026-11-08 09:27 (America/Mexico_City).
 
 > **No se instala con el Gearbox y no está activo por defecto.** Es un extra para quien
 > trabaja con sesiones largas o deja tareas corriendo mientras no está frente a la PC.
 
-> **Limitación conocida:** la vigilancia de cupo puede reutilizar una lectura vencida de
-> `usage.json` y alternar avisos de agotamiento y renovación sin datos nuevos. No uses esos
-> avisos como confirmación de cupo disponible; comprueba `/usage`. La corrección de vigencia
-> queda para un parche de código separado.
+> **Vigencia del cupo:** solo actúa con lecturas de hasta 300 segundos, no futuras,
+> y renovación futura de cada ventana. Sin ellas espera; no deduce cupo disponible del reloj.
+> El aviso de recuperación exige un porcentaje <50 en una lectura posterior de la misma sesión.
 
-Funciones previstas (con esa limitación):
+Funciones:
 
 | Problema | Qué hace el guardián |
 |---|---|
@@ -38,13 +37,11 @@ que estar pendiente— sin ceder el control.
 
 ## Requisitos
 
-- `bash`, `curl`, `cron`
-- Para vigilar **cupo**, una integración externa que escriba `~/.claude/gearbox/usage.json`.
-  El `statusline.sh` de `066477c` muestra porcentajes, pero no escribe ese archivo: su persistencia está
-  **pendiente del parche de código separado**. `rate_limits` solo llega en planes con límites de ventana
-  (suscripciones Pro, Max y Ultra de claude.ai, según la consulta del 2026-10-30 en
-  [FUENTES.md](../docs/FUENTES.md)); sin archivo el guardián vigila caídas, no cupo.
-  Esta actualización documental no corrige la vigencia del cupo; comprueba `/usage` aunque exista el archivo
+- `bash`, `python3` (biblioteca estándar), `curl`, `cron`
+- Para vigilar **cupo**, el statusline incluido escribe `~/.claude/gearbox/usage.json`.
+  Las ventanas ausentes o vencidas se omiten. Sin lectura vigente solo vigila caídas.
+  Con sesión registrada, descarta lecturas de otras sesiones. El archivo es un único snapshot:
+  sesiones simultáneas pueden reemplazarlo; si falta la sesión registrada, espera nuevos datos.
 - Para **reabrir ventanas**: WSL + Windows Terminal. En Linux/macOS el guardián detecta y avisa,
   pero no abre la ventana solo — te manda el comando listo para pegar
 
@@ -116,8 +113,14 @@ Se dice de frente para que nadie se lleve una sorpresa:
 
 Claude Code entrega al statusline, en cada refresco, un bloque `rate_limits` con el porcentaje
 usado y la **hora exacta de renovación** de cada ventana, según la consulta del 2026-10-30.
-El guardián solo lee `~/.claude/gearbox/usage.json`, si una integración externa lo genera.
-Persistir esos datos desde el statusline está **pendiente del parche de código separado**;
-el script publicado en `066477c` no lo hace.
+El guardián lee una vez por ejecución `~/.claude/gearbox/usage.json` (o `GUARDIAN_USAGE`).
+El statusline guarda `updated_at`, `session_id`, porcentajes y `reset_five_hour` /
+`reset_seven_day`; escribe atómicamente con permisos 600. La falta de límites en el
+siguiente payload reemplaza el snapshot anterior sin conservar porcentajes.
+El margen de 300 segundos es una decisión de este parche para el ciclo cron de tres minutos,
+no un límite del proveedor. No se envía aviso de renovación sin una nueva lectura <50%.
+Si no llegan datos nuevos tras el reset, comprueba `/usage`. Una pausa heredada sin `LECTURA`
+no se renueva automáticamente: requiere revisión manual. La pausa resuelta se archiva como
+`estado/pausa_cupo.anterior`.
 
 Es una lectura local y barata: **no consulta la red ni gasta cupo para saber cuánto cupo queda.**

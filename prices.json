@@ -1,31 +1,39 @@
 {
-  "updated": "2026-07-25",
+  "updated": "2026-11-08",
   "base": "sonnet",
-  "_note": "Precios verificados 2026-07-25 contra el tarifario oficial. relative = multiplicador vs Sonnet base. Opus 5 (claude-opus-5) sucede a Opus 4.8 al MISMO precio $5/$25 — el alias 'opus' hereda la version nueva. IMPORTANTE: el costo real NO lo decide solo el modelo — 'effort' es la palanca principal (low/medium rinden inusualmente bien en Opus 5; xhigh es el mejor para codigo/agentico). Estos multiplicadores son por token y NO capturan esa diferencia. Ver seccion 'La escalera de esfuerzo' en SKILL.md. Verificar tarifas antes de decisiones de volumen: cambian varias veces al ano.",
+  "_note": "USD por millón de tokens, API base sin caché ni recargos. Fuente y consulta: docs/FUENTES.md. relative = precio por token / Sonnet 5.5. Haiku usa relative_long cuando total_input_tokens > 100000; sin longitud no se estima. No predice consumo por esfuerzo.",
   "models": {
     "haiku": {
-      "input": 1,
-      "output": 5,
-      "relative": 0.5,
-      "_modelo": "Haiku 4.5"
+      "input": 0.1,
+      "output": 0.5,
+      "relative": 0.05,
+      "_modelo": "Haiku 5.5",
+      "id": "claude-haiku-5-5",
+      "input_long": 0.5,
+      "output_long": 2.5,
+      "relative_long": 0.25,
+      "prompt_threshold": 100000
     },
     "sonnet": {
       "input": 2,
       "output": 10,
-      "relative": 1,
-      "_modelo": "Sonnet 5"
+      "relative": 1.0,
+      "_modelo": "Sonnet 5.5",
+      "id": "claude-sonnet-5-5"
     },
     "opus": {
-      "input": 5,
-      "output": 25,
-      "relative": 2.5,
-      "_modelo": "Opus 5"
+      "input": 4,
+      "output": 20,
+      "relative": 2.0,
+      "_modelo": "Opus 5.5",
+      "id": "claude-opus-5-5"
     },
     "fable": {
       "input": 10,
       "output": 50,
-      "relative": 5,
-      "_modelo": "Fable 5"
+      "relative": 5.0,
+      "_modelo": "Fable 5.1",
+      "id": "claude-fable-5-1"
     }
   }
 }

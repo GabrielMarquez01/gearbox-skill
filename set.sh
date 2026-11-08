@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Gearbox set.sh — establece marcha, tarea y esfuerzo en state.json
 # Uso: set.sh <gear> [task] [effort] [model]
-#      set.sh G5 arquitectura high "Fable 5"
+#      set.sh G5 arquitectura high "Fable 5.1"
 #      set.sh G2 ejecución high
 #      set.sh auto
 # [model] también puede llegar por env var GEARBOX_MODEL, si no se pasa como argumento.
@@ -42,16 +42,30 @@ default_task() {
 }
 
 task="${2:-$(default_task "$gear")}"
-effort="${3:-high}"
+effort="${3:-auto}"
 model="${4:-${GEARBOX_MODEL:-}}"
 
 # Crear directorio si no existe
 mkdir -p "$GB_DIR"
 
 # Preservar el ultimo model conocido en state.json si esta llamada no trae uno nuevo
-clean() { printf '%s' "$1" | tr -d '"\\' ; }
+# JSON seguro: descartar bytes UTF-8 inválidos y escapar caracteres de control.
+clean() {
+  printf '%s' "$1" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.buffer.read().decode("utf-8", "ignore"), ensure_ascii=True)[1:-1], end="")'
+}
 if [ -z "$model" ] && [ -f "$GB_DIR/state.json" ]; then
-  model=$(grep -o '"model":"[^"]*"' "$GB_DIR/state.json" 2>/dev/null | head -1 | sed 's/"model":"//;s/"$//')
+  # El centinela evita que $(...) recorte saltos de línea finales del modelo.
+  model=$(python3 -c '
+import json,sys
+value=""
+try:
+    state=json.load(open(sys.argv[1]))
+    candidate=state.get("model") if isinstance(state,dict) else None
+    if isinstance(candidate,str): value=candidate
+except (OSError,ValueError): pass
+sys.stdout.buffer.write(value.encode("utf-8", "ignore") + b".")
+' "$GB_DIR/state.json" 2>/dev/null)
+  model="${model%.}"
 fi
 
 # Escribir state.json (sin jq, usando printf para seguridad)

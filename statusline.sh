@@ -8,26 +8,34 @@
 
 input=$(cat)
 
-# ── 1. Extraer modelo real del payload ─────────────────────────────────────
-model=$(printf '%s' "$input" | sed -n 's/.*"display_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
-[ -z "$model" ] && model="?"
-
-# ── 2. Leer state.json ─────────────────────────────────────────────────────
+# ── 1–3. JSON real: payload y estado; esfuerzo recibido > guardado > ? ────
 state_file="$HOME/.claude/gearbox/state.json"
-gear_state="auto"; task_state="auto"; effort_state="auto"
-if [ -f "$state_file" ]; then
-  s=$(cat "$state_file")
-  g=$(printf '%s' "$s" | sed -n 's/.*"gear"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p');   [ -n "$g" ] && gear_state="$g"
-  t=$(printf '%s' "$s" | sed -n 's/.*"task"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p');   [ -n "$t" ] && task_state="$t"
-  e=$(printf '%s' "$s" | sed -n 's/.*"effort"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'); [ -n "$e" ] && effort_state="$e"
-fi
-
-# ── 3. Effort real: runtime > state ────────────────────────────────────────
-effort="$effort_state"
-re=$(printf '%s' "$input" | sed -n 's/.*"effort"[[:space:]]*:[[:space:]]*{[^}]*"level"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
-[ -z "$re" ] && re=$(printf '%s' "$input" | sed -n 's/.*"effort"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
-[ -n "$re" ] && effort="$re"
-[ "$effort" = "auto" ] && effort="high"
+{
+  IFS= read -r model
+  IFS= read -r gear_state
+  IFS= read -r task_state
+  IFS= read -r effort
+} < <(python3 -c '
+import json, sys
+try:
+    data=json.loads(sys.argv[1])
+    if not isinstance(data,dict): data={}
+except ValueError: data={}
+try:
+    state=json.load(open(sys.argv[2]))
+    if not isinstance(state,dict): state={}
+except (ValueError,OSError): state={}
+model=data.get("model") or {}
+if not isinstance(model,dict): model={}
+effort=data.get("effort")
+if isinstance(effort,dict): effort=effort.get("level")
+if not isinstance(effort,str) or not effort: effort=state.get("effort", "auto")
+if not isinstance(effort,str) or not effort or effort == "auto": effort="?"
+for value in (model.get("display_name") or "?", state.get("gear") or "auto", state.get("task") or "auto", effort):
+    # Una línea por campo; quitar controles de terminal en la presentación.
+    value=str(value).encode("utf-8", "ignore").decode("utf-8")
+    print("".join(c if ord(c) >= 32 and ord(c) != 127 else " " for c in value))
+' "$input" "$state_file")
 
 # ── 4. Derivar marcha desde modelo real + effort (fuente de verdad) ───────
 case "$model" in
@@ -78,22 +86,29 @@ if [ "$task" = "auto" ] || [ -z "$task" ]; then
   esac
 fi
 
-# ── 7. Multiplicador desde prices.json (sed puro, sin python3) ────────────
+# ── 7. Catálogo JSON; no atribuir tarifa vigente a otra versión ───────────
 prices_file="$HOME/.claude/gearbox/prices.json"
+rel=$(python3 -c '
+import json, math, sys
+try:
+    data=json.loads(sys.argv[1]); prices=json.load(open(sys.argv[2]))
+    model=data.get("model", {})
+    for entry in prices["models"].values():
+        if model.get("id") != entry["id"] and (model.get("id") or model.get("display_name", "").lower() not in (entry["_modelo"].lower(), "claude "+entry["_modelo"].lower())):
+            continue
+        key="relative"
+        if "relative_long" in entry:
+            n=data.get("context_window", {}).get("total_input_tokens")
+            if isinstance(n, bool) or not isinstance(n, (int,float)) or not math.isfinite(n) or n < 0:
+                break
+            if n > entry["prompt_threshold"]: key="relative_long"
+        print(format(entry[key], "g"), end="")
+        break
+except (ValueError, OSError, KeyError, TypeError, AttributeError):
+    pass
+' "$input" "$prices_file")
 mult_str=""
-if [ -f "$prices_file" ]; then
-  model_key=""
-  case "$model" in
-    *[Ff]able*)  model_key="fable" ;;
-    *[Hh]aiku*)  model_key="haiku" ;;
-    *[Ss]onnet*) model_key="sonnet" ;;
-    *[Oo]pus*)   model_key="opus" ;;
-  esac
-  if [ -n "$model_key" ]; then
-    rel=$(sed -n "s/.*\"${model_key}\"[[:space:]]*:[[:space:]]*{[^}]*\"relative\"[[:space:]]*:[[:space:]]*\([0-9.]*\).*/\1/p" "$prices_file" | head -1)
-    [ -n "$rel" ] && mult_str=" · ≈${rel}x"
-  fi
-fi
+[ -n "$rel" ] && mult_str=" · ≈${rel}x"
 
 # ── 8. Costo real: cost.total_cost_usd (anidado — "cost_usd" plano no existe) ─
 cost_usd=$(printf '%s' "$input" | sed -n 's/.*"total_cost_usd"[[:space:]]*:[[:space:]]*\([0-9]*\.\?[0-9]*\).*/\1/p' | head -1)
@@ -110,8 +125,39 @@ fi
 #      independiente: puede faltar una sin la otra.
 usage_str=""
 usage_hint=""
-five_h=$(printf '%s' "$input" | sed -n 's/.*"five_hour"[[:space:]]*:[[:space:]]*{[^}]*"used_percentage"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p' | head -1)
-seven_d=$(printf '%s' "$input" | sed -n 's/.*"seven_day"[[:space:]]*:[[:space:]]*{[^}]*"used_percentage"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p' | head -1)
+# Solo ventanas con porcentaje válido y resets_at futuro. Cada refresco reemplaza
+# el snapshot completo: un payload sin límites invalida la lectura anterior.
+{
+  IFS= read -r five_h
+  IFS= read -r seven_d
+} < <(python3 -c '
+import json, math, os, sys, tempfile, time
+now=time.time(); result={"updated_at":now}
+try:
+    data=json.loads(sys.argv[1])
+    if not isinstance(data,dict): data={}
+except ValueError:
+    data={}
+sid=data.get("session_id")
+if isinstance(sid,str): result["session_id"]=sid.encode("utf-8", "ignore").decode("utf-8")
+limits=data.get("rate_limits") or {}
+if not isinstance(limits,dict): limits={}
+for name in ("five_hour", "seven_day"):
+    window=limits.get(name) or {}
+    if not isinstance(window,dict): continue
+    pct=window.get("used_percentage"); reset=window.get("resets_at")
+    if all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in (pct,reset)) and 0 <= pct <= 100 and reset > now:
+        result[name]=int(pct)
+        result["reset_"+name]=reset
+try:
+    directory=os.path.dirname(sys.argv[2]); os.makedirs(directory,exist_ok=True)
+    with tempfile.NamedTemporaryFile(mode="w",dir=directory,prefix="usage-",delete=False) as f:
+        json.dump(result,f); f.write("\n"); temp=f.name
+    os.replace(temp,sys.argv[2])  # permisos 600, reemplazo atómico
+except OSError:
+    pass
+print(result.get("five_hour", "")); print(result.get("seven_day", ""))
+' "$input" "$HOME/.claude/gearbox/usage.json")
 
 color_for() { # $1 = porcentaje entero → código ANSI: <50 verde · 50-79 ámbar · ≥80 rojo
   if [ "$1" -ge 80 ]; then printf '31'

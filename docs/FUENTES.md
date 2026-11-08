@@ -1,25 +1,29 @@
 # FUENTES — de dónde sale cada precio, ID y cifra de Gearbox
 
-Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+Actualizado: 2026-11-08 09:27 (America/Mexico_City).
 
-Reconfirmación 2026-10-31: los cuatro IDs de Claude y sus precios de entrada/salida (incluidos ambos tramos de Haiku) se comprobaron en https://platform.claude.com/docs/en/about-claude/models/overview y https://platform.claude.com/docs/en/about-claude/pricing. La conversión de palabras a tokens y sus derivados se retiraron por falta de corroboración reproducible. Las demás consultas de este registro conservan su fecha original.
+Reconfirmación 2026-11-08: IDs y precios base de los cuatro modelos, incluidos ambos
+tramos de Haiku, abiertos en la documentación oficial de modelos y precios. Los enlaces de
+§1 y §2 se reconsultaron para este parche; las demás consultas conservan su fecha original.
 El registro original de consultas corresponde al **2026-10-30** a la fuente oficial de cada proveedor. Si una tarifa o un modelo cambió después de esa fecha, la fuente manda sobre este archivo.
 Citas literales en inglés tal como las devolvió la página; las traducciones al español del repo se marcan como «traducción nuestra / libre».
 
 ## 1. Precios (USD por millón de tokens, tarifa base de la API)
 
-| Modelo | ID de API | Entrada | Salida | Fuente (URL · consultada 2026-10-30) | Dónde aparece en el repo |
+| Modelo | ID de API | Entrada | Salida | Fuente (URL · consulta de los cuatro modelos: 2026-11-08) | Dónde aparece en el repo |
 |---|---|---:|---:|---|---|
 | Fable 5.1 | `claude-fable-5-1` | $10 | $50 | https://platform.claude.com/docs/en/about-claude/models/overview · https://platform.claude.com/docs/en/about-claude/pricing (fila «Claude Fable 5.1») · https://claude.com/pricing · https://platform.claude.com/docs/en/models/fable-5-1/overview | `SKILL.md` (§Tabla de Marchas, §Model Watch), `README.md` (tabla de precios) |
-| Opus 5.5 | `claude-opus-5-5` | $4 | $20 | mismas páginas (fila «Claude Opus 5.5») | ídem |
-| Sonnet 5.5 | `claude-sonnet-5-5` | $2 | $10 | mismas páginas (fila «Claude Sonnet 5.5») | ídem |
-| Haiku 5.5 (prompt ≤ 100 000 tokens) | `claude-haiku-5-5` | $0.10 | $0.50 | pricing: «Claude Haiku 5.5 (for prompts up to 100,000 tokens) … $0.10 / MTok … $0.50 / MTok» · claude.com/pricing: «Haiku 5.5 (≤100K-token prompts) $0.10 / $0.50» | ídem |
-| Haiku 5.5 (prompt > 100 000 tokens) | `claude-haiku-5-5` | $0.50 | $2.50 | pricing: «Claude Haiku 5.5 (for prompts over 100,000 tokens) … $0.50 / MTok … $2.50 / MTok» | `SKILL.md`, `README.md` |
+| Opus 5.5 | `claude-opus-5-5` | $4 | $20 | https://platform.claude.com/docs/en/about-claude/pricing (fila «Claude Opus 5.5») | ídem |
+| Sonnet 5.5 | `claude-sonnet-5-5` | $2 | $10 | https://platform.claude.com/docs/en/about-claude/pricing (fila «Claude Sonnet 5.5») | ídem |
+| Haiku 5.5 (prompt ≤ 100 000 tokens) | `claude-haiku-5-5` | $0.10 | $0.50 | https://platform.claude.com/docs/en/about-claude/pricing: «Claude Haiku 5.5 (for prompts up to 100,000 tokens) … $0.10 / MTok … $0.50 / MTok» · claude.com/pricing: «Haiku 5.5 (≤100K-token prompts) $0.10 / $0.50» | ídem |
+| Haiku 5.5 (prompt > 100 000 tokens) | `claude-haiku-5-5` | $0.50 | $2.50 | https://platform.claude.com/docs/en/about-claude/pricing: «Claude Haiku 5.5 (for prompts over 100,000 tokens) … $0.50 / MTok … $2.50 / MTok» | `SKILL.md`, `README.md` |
 | Opus 5 (anterior, solo para comparar) | — | $5 | $25 | pricing (fila «Claude Opus 5») y claude.com/pricing («Legacy models») | `README.md` y `SKILL.md` («el Opus anterior costaba $5 / $25») |
 | Sonnet 5 (anterior, solo para comparar) | — | $2 | $10 | pricing, nota 3: «The $2/$10 per million input/output token pricing for Claude Sonnet 5, announced at launch as introductory pricing through August 31, 2026, is now the standard price. The previously scheduled increase to $3/$15 … will not occur.» | `SKILL.md` §Model Watch (3) |
 
-Estos IDs y tarifas se publican en la documentación; `prices.json` conserva el catálogo de julio de 2026.
-Su actualización y la de los scripts `.sh` están **pendientes del parche de código separado** (ver §4b).
+`prices.json` contiene estos cuatro IDs y tarifas desde el parche del 2026-11-08.
+`input_long`, `output_long`, `relative_long` y `prompt_threshold` modelan el segundo tramo de Haiku.
+Las tarifas son base de la API directa, USD por millón de tokens, sin caché ni recargos de residencia.
+Las filas anteriores (Opus 5 y Sonnet 5) son históricas, consulta conservada del 2026-10-30.
 
 Notas oficiales usadas:
 - Lectura de caché: «prompt cache reads cost 10% of the base input price (2.5% on Claude Fable 5.1 and Claude Mythos 5.1, 5% on Claude Opus 5.5 and Claude Sonnet 5.5)» — models overview, nota *Pricing*. De ahí «del 90 % al 97.5 %» de descuento en `SKILL.md` (el 10 % de Haiku 5.5 sale de su fila: $0.01 sobre $0.10).
@@ -27,7 +31,7 @@ Notas oficiales usadas:
 - Haiku 5.5 se cobra por longitud de prompt: «Claude Haiku 5.5 is priced by prompt length: a request whose prompt is over 100,000 tokens pays higher prices» (pricing, §Long context pricing).
 - Los demás modelos incluyen la ventana de 1M «at standard pricing» (pricing, §Long context pricing).
 
-## 2. IDs, ventana, salida y esfuerzo por defecto (models overview, 2026-10-30)
+## 2. IDs, ventana, salida y esfuerzo por defecto (models overview, reconsulta 2026-11-08)
 
 URL: https://platform.claude.com/docs/en/about-claude/models/overview
 
@@ -61,22 +65,27 @@ URL: https://code.claude.com/docs/en/model-config (consultada 2026-10-30; se ley
 
 ## 4b. Claude Code: payload del statusline (para `statusline.sh` y el guardián)
 
-URL: https://code.claude.com/docs/en/statusline (consultada 2026-10-30, vuelta 2)
-- `context_window.total_input_tokens`: «Token counts currently in the context window, from the most recent API response. Input includes cache reads and writes». Seleccionar `relative_long` de Haiku 5.5 para prompts > 100 000 tokens a partir de ese campo está **pendiente del parche de código separado**; el script de `066477c` no lo lee.
-- `effort.level`: «…Absent when the current model does not support the effort parameter». Mostrar `?` cuando tampoco hay esfuerzo guardado está **pendiente del parche de código separado**: el script de `066477c` usa el estado como respaldo y convierte `auto` en `high`.
+URL: https://code.claude.com/docs/en/statusline (reconsultada 2026-11-08 para campos de cupo y longitud)
+- `context_window.total_input_tokens`: «Token counts currently in the context window, from the most recent API response. Input includes cache reads and writes». El parche selecciona `relative_long` de Haiku 5.5 para prompts > 100 000 tokens a partir de ese campo; si falta una longitud válida, omite el multiplicador.
+- `effort.level`: «…Absent when the current model does not support the effort parameter». El parche muestra `?` cuando tampoco hay esfuerzo guardado y usa `effort=auto` por defecto en `set.sh`.
 - `rate_limits.five_hour.used_percentage`, `rate_limits.seven_day.used_percentage` (0–100, pueden ser decimales) y `rate_limits.five_hour.resets_at`, `rate_limits.seven_day.resets_at`: «Unix epoch seconds when the 5-hour or 7-day rate limit window resets»; `session_id`: «Unique session identifier».
 - `rate_limits`: «appears only for claude.ai Pro, Max, and Ultra subscribers, or behind a Claude apps gateway…; it appears only after the first API response in the session. Each window … may be independently absent».
 - La doc menciona `ultrathink` («not one that a skill, a subagent, or `ultrathink` set»): existe como mecanismo, pero no documenta su efecto en los modelos 5.5; por eso G3.5 usa `/effort`.
 
 Registro histórico: https://api.github.com/repos/GabrielMarquez01/gearbox-skill/commits?path=prices.json (vía `gh api`, 2026-10-30): tres commits que tocan `prices.json` (2026-07-06, 2026-07-13, 2026-07-25). No se reconsultó la red en esta actualización documental.
 
-Comportamiento comprobable en el código de `066477c`:
-- `prices.json` lleva `updated: 2026-07-25`, modelos Haiku 4.5, Sonnet 5, Opus 5 y Fable 5; no contiene los IDs de §1 ni `relative_long`.
-- `statusline.sh` busca la clave del modelo y `relative` en la misma línea: con el JSON multilínea incluido no muestra el multiplicador. El lector independiente del formato está **pendiente del parche de código separado**.
-- `set.sh` usa la tarea de la marcha y `effort=high` por defecto. Cambiar a `effort=auto` está **pendiente del parche de código separado**.
-- `install.sh` instala `prices.json` solo cuando no existe y conserva cualquier copia existente. No contiene `PRICES_ANTERIORES` ni genera `prices.json.nuevo`; la migración por huellas está **pendiente del parche de código separado**.
-- `statusline.sh` muestra porcentajes de `rate_limits`, pero no escribe `usage.json`. La persistencia para el guardián está **pendiente del parche de código separado**, al igual que la corrección de vigencia de sus lecturas.
-- `guardian/guardian.sh` lee `usage.json` (o la ruta de `GUARDIAN_USAGE`): sin archivo no vigila cupo. `registrar "ID_DE_TU_SESION"` guarda el ID explícito en `estado/session_id`; si se omite, intenta leerlo de `usage.json`. Sus lectores no comprueban la antigüedad del archivo: la renovación compara la hora `RESET` guardada o un porcentaje menor de 50, sin exigir una lectura nueva. Son límites del código de `066477c`, no correcciones de esta edición.
+Comportamiento del parche del 2026-11-08 (cubierto por `tests/test_regressions.py`):
+- El catálogo contiene los cuatro modelos actuales; el lector JSON acepta formato multilínea.
+- El statusline solo acepta porcentajes finitos entre 0 y 100 y `resets_at` futuro.
+  Escribe un snapshot completo, atómico, con permisos 600 y sello local `updated_at`.
+- El guardián exige antigüedad entre 0 y 300 segundos y reset futuro; trabaja con un
+  único snapshot por invocación. Solo anuncia recuperación con otra lectura posterior
+  de la misma sesión, porcentaje <50. Una sesión registrada filtra otras sesiones.
+- El TTL de 300 segundos y el truncamiento de porcentajes son decisiones del parche,
+  no cifras atribuidas al proveedor. El cron documentado corre cada tres minutos.
+- `install.sh` conserva precios existentes. La migración por huellas y `prices.json.nuevo`
+  siguen fuera de este parche; quien actualice una instalación previa debe revisar su catálogo.
+- UTF-8 inválido se descarta; comillas, barras y controles se escapan mediante JSON.
 
 ## 5. Cálculos derivados (aritmética propia, reproducible)
 

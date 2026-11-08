@@ -1,6 +1,6 @@
 <div align="center">
 
-Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+Actualizado: 2026-11-08 09:27 (America/Mexico_City).
 
 ![Gearbox EV6 — Torre de Control multi-motor](docs/assets/gearbox-ev6-banner.png)
 
@@ -39,16 +39,12 @@ Esto es **infraestructura temprana y honesta**: no comparte cuentas ni sesiones 
 **Documento técnico completo:** [Gearbox EV6 — Torre de Control multi-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md)
 → [Qué problema resuelve](docs/GEARBOX-EV6-MULTI-MOTOR.md#1-qué-problema-intenta-resolver) · [Arquitectura en 5 minutos](docs/GEARBOX-EV6-MULTI-MOTOR.md#2-arquitectura-en-cinco-minutos) · [Guía de replicación](docs/GEARBOX-EV6-MULTI-MOTOR.md#4-guía-de-replicación) · [Modo mono-motor](docs/GEARBOX-EV6-MULTI-MOTOR.md#5-modo-mono-motor-empezar-solo-con-claude-code) · [El primer día (caso real)](docs/GEARBOX-EV6-MULTI-MOTOR.md#6-el-primer-día-una-omisión-fiscal-detectada-por-auditoría-cruzada) · [Fricciones reales](docs/GEARBOX-EV6-MULTI-MOTOR.md#8-fricciones-reales-encontradas) · [Cómo evaluar tu réplica](docs/GEARBOX-EV6-MULTI-MOTOR.md#10-cómo-evaluar-tu-propia-réplica) · [Invitación a la comunidad](docs/GEARBOX-EV6-MULTI-MOTOR.md#12-invitación-a-la-comunidad)
 
-> **Limitaciones conocidas:** la bitácora puede generar JSON inválido ante bytes UTF-8
-> incompletos, y el guardián opcional puede reutilizar lecturas de cupo vencidas. Comprueba
-> `/usage` antes de continuar por un aviso del guardián. Las correcciones de código quedan
-> para un parche separado; esta actualización no las acredita como resueltas.
-> `prices.json` conserva el catálogo de julio de 2026; su actualización y la de los scripts
-> `.sh` al catálogo Claude 5.x están **pendientes del parche de código separado**. Los IDs y
-> tarifas fechados de esta documentación constan en [docs/FUENTES.md](docs/FUENTES.md).
-> El `statusline.sh` de `066477c` tampoco escribe `usage.json`: la vigilancia de cupo del
-> guardián requiere ese archivo de una integración externa; su persistencia desde el statusline
-> está **pendiente del parche de código separado**.
+> **Parche de robustez:** `log.sh` y `set.sh` descartan bytes UTF-8 inválidos y escapan
+> JSON. El statusline persiste cupo de ventanas vigentes; el guardián exige lecturas de hasta
+> 300 segundos, reset futuro y una nueva observación de la misma sesión para avisar renovación.
+> Sin datos vigentes, el cupo es desconocido: comprueba `/usage`.
+> `prices.json` y el lector usan Claude 5.x y ambos tramos de Haiku 5.5; fuentes y fecha
+> en [docs/FUENTES.md](docs/FUENTES.md). Pruebas: `python3 tests/test_regressions.py`.
 
 ## 🚀 Quick Start
 
@@ -64,7 +60,7 @@ curl -fsSL https://raw.githubusercontent.com/GabrielMarquez01/gearbox-skill/mast
 
 Reinicia Claude Code y listo. El instalador hace **backup** de tu `settings.json` antes de tocarlo. Si prefieres revisar antes de ejecutar: clona el repo y corre `bash install.sh`. Detalle completo del skill (tabla de marchas, statusline, bitácora) en [SKILL.md](SKILL.md).
 
-> Requisitos: Claude Code v2.1.170+ (`claude update`) · bash · python3. Los scripts son bash+sed puros.
+> Requisitos: Claude Code v2.1.170+ (`claude update`) · bash · python3. Los scripts usan bash y python3 (biblioteca estándar).
 
 ### Capa 2 — Multi-motor (opcional)
 
@@ -331,6 +327,6 @@ La forma más útil de mejorar Gearbox EV6 no es afirmar que un motor "gana", si
 
 <sub>⚙ <b>Gearbox</b> · usar → medir → calibrar · Documentado en equipo multi-motor: redacción <b>Codex</b> · coordinación <b>Claude</b> · tercer motor <b>Antigravity</b> · autoridad final: <b>el operador humano</b></sub>
 
-<sub>Actualizado: 2026-11-07 00:29</sub>
+<sub>Actualizado: 2026-11-08 09:27</sub>
 
 </div>

@@ -14,7 +14,7 @@ description: >-
 
 # Gearbox — Selector Automático de Modelo y Esfuerzo
 
-Actualizado: 2026-11-07 00:29 (America/Mexico_City).
+Actualizado: 2026-11-08 09:27 (America/Mexico_City).
 
 > **Regla de oro:** usar la marcha más baja que entregue resultado confiable,
 > y subir solo cuando el riesgo, dinero o complejidad lo justifique.
@@ -51,11 +51,9 @@ Sonnet 5.5), no un dato de la página: una brújula por token, no una factura. L
 al año — la fuente manda sobre este archivo; vuelve a consultarla antes de decisiones de volumen
 (registro fechado en [docs/FUENTES.md](docs/FUENTES.md)).
 
-> **Límite de esta actualización documental:** `prices.json` conserva el catálogo de julio de 2026.
-> Su actualización y la de los scripts `.sh` al catálogo Claude 5.x están **pendientes del parche de
-> código separado**. Las tablas de este documento no describen los precios que usa hoy el statusline.
-> Los ejemplos de pantalla con `≈Nx` ilustran el formato; con el `prices.json` multilínea incluido,
-> el lector actual puede omitir el multiplicador (ver §«`≈Nx` — el multiplicador»).
+> `prices.json` y el statusline usan el catálogo Claude 5.x fechado en
+> [docs/FUENTES.md](docs/FUENTES.md). Los multiplicadores requieren coincidencia del ID o,
+> si falta, del nombre completo; no se atribuye la tarifa actual a una versión antigua.
 
 La recomendación oficial de Anthropic para elegir dentro de la familia coincide con la lógica de esta tabla:
 empezar por Opus 5.5 para la mayoría de las cargas, y pasar a Fable 5.1 *«para razonamiento exigente y trabajo
@@ -367,21 +365,17 @@ No rompe nada — solo informa. El asterisco nunca bloquea trabajo.
 #### `≈Nx` — el multiplicador
 
 Brújula de costo relativo vs Sonnet base, leída de `~/.claude/gearbox/prices.json`.
-El `statusline.sh` de `066477c` solo busca `relative`, con la clave del modelo y su valor en la misma
-línea. El JSON multilínea incluido no cumple ese formato, por lo que no se muestra `≈Nx` con ese archivo.
-El lector independiente del formato está **pendiente del parche de código separado**.
+El lector usa JSON con python3 y acepta catálogo multilínea o compacto.
 **No es una factura** — usa `/usage` como fuente final. Si el payload de Claude Code trae un costo
 real de sesión distinto de cero, el statusline lo muestra como `~$X est.`.
 
-Los dos tramos de Haiku 5.5 están documentados en [docs/FUENTES.md](docs/FUENTES.md), pero el script actual
-no lee `context_window.total_input_tokens` ni `relative_long`. La selección de 0.25× para prompts de más
-de 100 000 tokens, frente a 0.05× para el tramo corto, está **pendiente del parche de código separado**.
+Para Haiku 5.5 selecciona 0.25× cuando `context_window.total_input_tokens` supera
+100 000; hasta ese límite, 0.05×. Sin longitud válida, omite el multiplicador.
 
-#### El esfuerzo en pantalla — valor recibido, guardado o `high` de respaldo
+#### El esfuerzo en pantalla — recibido, guardado o desconocido
 
-El statusline prioriza `effort.level` (o `effort` como cadena) del payload y, si falta, usa el valor
-de `state.json`. Sin valor guardado o cuando queda `auto`, muestra `high` de respaldo: eso no demuestra
-el esfuerzo real del modelo. Mostrar `?` cuando no hay dato está **pendiente del parche de código separado**.
+El statusline prioriza `effort.level` (o `effort` como cadena), después el valor de
+`state.json`. Si el estado es `auto` o falta el dato, muestra `?`.
 
 #### Barra de `/usage` — cuánto llevas quemado de tus límites
 
@@ -397,11 +391,12 @@ Desde Claude Code v2.1.80 el payload de statusline trae `rate_limits.{five_hour,
 - Colores: <50% verde · 50–79% ámbar · ≥80% rojo.
 - Si el payload no trae `rate_limits` (API, plan free, primer turno de la sesión), no se
   muestra nada — cada ventana puede faltar por separado, nunca se inventa.
-- **Persistencia para el guardián opcional:** el `statusline.sh` de `066477c` muestra los porcentajes,
-  pero no escribe `~/.claude/gearbox/usage.json`. El [`guardián`](guardian/README.md) lee ese archivo si una
-  integración externa lo genera. Persistir porcentajes, renovación y `session_id` con permisos 600 y
-  escritura atómica está **pendiente del parche de código separado**; tampoco se ha corregido la
-  reutilización de lecturas vencidas.
+- **Persistencia para el guardián opcional:** escribe `~/.claude/gearbox/usage.json`
+  atómicamente con permisos 600: `updated_at`, `session_id`, `five_hour`, `seven_day`,
+  `reset_five_hour` y `reset_seven_day` (epoch). Omite cada ventana inválida, ausente o vencida.
+  El guardián rechaza snapshots con más de 300 segundos, futuros o sin sello. No infiere
+  renovación por el reloj: exige observación posterior de la misma sesión con porcentaje <50.
+  Los porcentajes decimales se truncan para la presentación y el umbral del guardián.
 - Pieza gearbox-nativa: si 7d≥80% y la marcha activa es G4/G5, aparece un hint ámbar:
   `⚠ 7d al NN% en marcha cara — considera bajar`. El `≈Nx` dice qué tan rápido quemas;
   la barra dice cuánto llevas quemado; el hint conecta ambos con la decisión de marcha.
@@ -415,8 +410,8 @@ Desde Claude Code v2.1.80 el payload de statusline trae `rate_limits.{five_hour,
 ```
 
 Marchas válidas: `auto G0 G1 G2 G3 G3.5 G4 G5`.
-El segundo y tercer argumento son opcionales (defaults: la tarea de la marcha y `effort=high`).
-Cambiar el default a `effort=auto` está **pendiente del parche de código separado**.
+El segundo y tercer argumento son opcionales (defaults: la tarea de la marcha y `effort=auto`).
+`auto` deja el esfuerzo desconocido hasta recibirlo del runtime o fijarlo explícitamente.
 
 ### Bitácora de calibración: dos ríos separados
 

@@ -15,7 +15,7 @@
 #
 # NO ESTÁ ACTIVO POR DEFECTO. Ver guardian/README.md para encenderlo.
 #
-# Requisitos: bash, curl, cron. Para reabrir ventanas: WSL + Windows Terminal
+# Requisitos: bash, python3, curl, cron. Para reabrir ventanas: WSL + Windows Terminal
 # (en Linux/macOS el guardián avisa en vez de reabrir — ver README).
 # ─────────────────────────────────────────────────────────────────────────────
 set -uo pipefail
@@ -59,8 +59,29 @@ avisar() {
 }
 
 # ── lectura del cupo (lo escribe el statusline del Gearbox) ─────────────────
-usage_num() { [ -s "$USAGE" ] || return 1; sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p" "$USAGE" | head -1; }
-usage_sid() { [ -s "$USAGE" ] || return 1; sed -n 's/.*"session_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$USAGE" | head -1; }
+# Un único snapshot validado por invocación; antigüedad máxima: 300 s.
+# Datos antiguos, futuros, sin sello o sin reset futuro significan desconocido.
+usage_snapshot=$(python3 - "$USAGE" <<'PYUSAGE'
+import json, math, sys, time
+result={}
+try:
+    data=json.load(open(sys.argv[1])); now=time.time(); ts=data.get("updated_at")
+    if isinstance(ts,(int,float)) and not isinstance(ts,bool) and math.isfinite(ts) and 0 <= now-ts <= 300:
+        result["updated_at"]=ts
+        if isinstance(data.get("session_id"),str): result["session_id"]=data["session_id"].encode("utf-8", "ignore").decode("utf-8")
+        for name in ("five_hour","seven_day"):
+            pct=data.get(name); reset=data.get("reset_"+name)
+            if all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in (pct,reset)) and 0 <= pct <= 100 and reset > now:
+                result[name]=int(pct); result["reset_"+name]=int(reset)
+except (OSError,ValueError,AttributeError):
+    pass
+print(json.dumps(result))
+PYUSAGE
+)
+usage_num() {
+  python3 -c 'import json,sys; v=json.loads(sys.argv[1]).get(sys.argv[2]); print(v if v is not None else "", end="")' "$usage_snapshot" "$1"
+}
+usage_sid() { usage_num session_id; }
 
 hay_internet() { curl -sf -m 8 -o /dev/null https://api.anthropic.com/ 2>/dev/null; }
 
@@ -147,13 +168,17 @@ vigilar_sesion() {
 
 # ── 2. se agotó el cupo ─────────────────────────────────────────────────────
 vigilar_cupo() {
-  local pct reset ahora restante
+  local pct reset ahora restante sid lectura registrado
   pct=$(usage_num five_hour) || return 0
   [ -z "$pct" ] && return 0
   reset=$(usage_num reset_five_hour); ahora=$(date +%s)
+  sid=$(usage_sid); lectura=$(usage_num updated_at)
+  [ -n "$sid" ] || return 0
+  registrado=$(cat "$ESTADO/session_id" 2>/dev/null || true)
+  [ -z "$registrado" ] || [ "$registrado" = "$sid" ] || return 0
 
   if [ "$pct" -ge "$UMBRAL_CUPO" ] && [ ! -f "$ESTADO/pausa_cupo" ]; then
-    { echo "SID='$(usage_sid)'"; echo "RESET='${reset:-0}'"; echo "DESDE='$(date '+%H:%M')'"; } > "$ESTADO/pausa_cupo"
+    printf 'SID=%q\nRESET=%q\nLECTURA=%q\nDESDE=%q\n' "$sid" "$reset" "$lectura" "$(date '+%H:%M')" > "$ESTADO/pausa_cupo"
     restante=$(( (${reset:-0} - ahora) / 60 ))
     log "cupo agotado ($pct%)"
     avisar "⏸️ Se agotó el cupo de esta ventana ($pct%). Tu tarea queda en pausa. Se renueva en ~${restante} min y te aviso."
@@ -163,8 +188,11 @@ vigilar_cupo() {
   if [ -f "$ESTADO/pausa_cupo" ]; then
     # shellcheck disable=SC1090
     . "$ESTADO/pausa_cupo"
-    if [ "$ahora" -ge "${RESET:-0}" ] || [ "$pct" -lt 50 ]; then
-      rm -f "$ESTADO/pausa_cupo"
+    # La hora de reset sola no acredita cupo nuevo: exigir otra observación
+    # de la misma sesión, posterior a la pausa, con porcentaje recuperado.
+    if [ -n "${LECTURA:-}" ] && [ "$sid" = "${SID:-}" ] && [ "$pct" -lt 50 ] &&
+       LC_ALL=C awk -v actual="$lectura" -v previa="$LECTURA" 'BEGIN {exit !(actual > previa)}'; then
+      mv "$ESTADO/pausa_cupo" "$ESTADO/pausa_cupo.anterior"
       echo "${SID:-}" > "$ESTADO/pendiente"
       log "cupo renovado — esperando tu visto bueno"
       avisar "▶️ Ya se renovó tu cupo (al $pct%). La tarea quedó pausada desde las ${DESDE:-?}. Para retomarla:  guardian.sh continuar"
@@ -188,10 +216,20 @@ case "${1:-check}" in
   check)     [ -f "$ESTADO/pausado" ] && exit 0; vigilar_cupo; vigilar_sesion ;;
   continuar) continuar "${2:-}" ;;
   cupo)
-    echo "  cupo 5 h usado : $(usage_num five_hour)%"
+    pct=$(usage_num five_hour)
+    if [ -n "$pct" ]; then
+      echo "  cupo 5 h usado : $pct%"
+    else
+      echo "  cupo 5 h: desconocido (sin lectura vigente)"
+    fi
     r=$(usage_num reset_five_hour)
     [ -n "$r" ] && [ "$r" != "null" ] && echo "  se renueva     : $(date -d "@$r" '+%H:%M' 2>/dev/null) (en $(( (r - $(date +%s)) / 60 )) min)"
-    echo "  cupo 7 días    : $(usage_num seven_day)%"
+    pct=$(usage_num seven_day)
+    if [ -n "$pct" ]; then
+      echo "  cupo 7 días    : $pct%"
+    else
+      echo "  cupo 7 días: desconocido (sin lectura vigente)"
+    fi
     echo -n "  estado         : "; [ -f "$ESTADO/pausa_cupo" ] && echo "EN PAUSA por cupo" || echo "operando" ;;
   estado)
     echo "  sesión vigilada : $(cat "$ESTADO/session_id" 2>/dev/null || echo '—')"
